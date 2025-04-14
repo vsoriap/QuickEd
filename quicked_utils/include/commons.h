@@ -26,35 +26,30 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-
-#include <stdbool.h>
 #include <stdint.h>
-#include <float.h>
 #include <inttypes.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <string.h>
-#include <wchar.h>
 #include <time.h>
-#include <sys/time.h>
-
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <limits.h>
-#include <pwd.h>
-
 #include <string.h>
 #include <math.h>
-#include <stdarg.h>
 #include <getopt.h>
 
-#include <err.h>
-#include <errno.h>
-#include <assert.h>
-#include <signal.h>
+// #include <stdbool.h>
+// #include <float.h>
+// #include <ctype.h>
+// #include <sys/types.h>
+// #include <string.h>
+// #include <wchar.h>
+// #include <sys/time.h>
+// #include <sys/stat.h>
+// #include <sys/mman.h>
+// #include <fcntl.h>
+// #include <limits.h>
+// #include <pwd.h>
+// #include <stdarg.h>
+// #include <err.h>
+// #include <errno.h>
+// #include <assert.h>
+// #include <signal.h>
 
 /*
  * Macro Utils (Stringify)
