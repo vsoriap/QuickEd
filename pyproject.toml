@@ -1,16 +1,24 @@
 [build-system]
-requires = ["scikit-build-core==0.11"]
+requires = ["scikit-build-core==0.11", "packaging>=24.2"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
 build.verbose = true
 logging.level = "INFO"
 build.targets = ["pyquicked"]
+install.components = ["pyquicked"]
+
+[tool.cibuildwheel]
+before-all = "uname -a"
+environment = { CMAKE_ARGS = "-DQUICKED_NONATIVE=ON" }
+
+[tool.cibuildwheel.linux]
+archs = ["auto64"]
 
 [project]
 name = "QuickEd"
 description = "Python bindings for QuickEd"
-# readme = { file = "PYTHON.md", content-type = "text/markdown" }
+readme = { file = "bindings/python/README.md", content-type = "text/markdown" }
 authors = [
     {name = "Max Doblas", email = "max.doblas@bsc.es"},
     {name = "Oscar Lostes-Cazorla", email = "oscar.lostes@bsc.es"},
@@ -21,8 +29,18 @@ maintainers = [
   { name = "Oscar Lostes-Cazorla", email = "oscar.lostes@bsc.es" },
 ]
 license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["edit", "distance", "levenshtein", "align", "sequence", "bioinformatics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 version = "1.1"
-requires-python = ">=3.10"
+requires-python = ">=3" # TODO: Check minimum version
 
 [project.urls]
 Homepage = "https://github.com/maxdoblas/QuickEd"

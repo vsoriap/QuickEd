@@ -22,8 +22,8 @@ file(GLOB UTILS_SRCS
 target_sources(quicked PRIVATE ${QUICKED_SRCS} ${UTILS_SRCS}) # Add sources to target
 
 # Install
-install(TARGETS quicked DESTINATION lib)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/quicked.h DESTINATION include)
+install(TARGETS quicked DESTINATION lib COMPONENT quicked)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/quicked.h DESTINATION include COMPONENT quicked)
 install(FILES
     ${PROJECT_SOURCE_DIR}/quicked_utils/include/commons.h
     ${PROJECT_SOURCE_DIR}/quicked_utils/include/mm_allocator.h
@@ -31,4 +31,5 @@ install(FILES
     ${PROJECT_SOURCE_DIR}/quicked_utils/include/profiler_counter.h
     ${PROJECT_SOURCE_DIR}/quicked_utils/include/vector.h
     DESTINATION include/quicked_utils/include
+    COMPONENT quicked
 )

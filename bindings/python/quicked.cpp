@@ -26,42 +26,70 @@
 #include "quicked.hpp"
 
 namespace py = pybind11;
+using namespace py::literals;
+
 namespace quicked {
     PYBIND11_MODULE(quicked, m) {
-        m.doc() = "QuickEd Library";
+        m.doc() = R"pbdoc(
+QuickEd - A high-performance exact sequence alignment based on the bound-and-align paradigm
+===========================================================================================
 
-    py::class_<QuickedAligner>(m, "QuickedAligner")
+QuickEd is a high-performance exact sequence alignment based on the bound-and-align paradigm.
+Currently, QuickEd focuses on DNA sequence alignment, using the edit distance (Levenshtein distance) metric.
+
+    >>> pattern = "ACGT"
+    >>> text = "ACTT"
+    >>> aligner = quicked.QuickedAligner()
+    >>> aligner.align(pattern, text)
+    >>> score = aligner.getScore()
+    >>> cigar = aligner.getCigar()
+
+QuickEd is actually a C library, and this package is it’s wrapper for Python.
+Check out QuickEd's GitHub for more code examples and more details on how QuickEd works.
+)pbdoc";
+
+        py::enum_<quicked_algo_t>(m, "QuickedAlgo",
+            R"pbdoc(
+QuickedAlgo
+===========
+
+Enumeration of alignment algorithms
+            )pbdoc")
+            .value("QUICKED", QUICKED, R"pbdoc(QuickEd algorithm)pbdoc")
+            .value("WINDOWED", WINDOWED, R"pbdoc(WindowEd algorithm)pbdoc")
+            .value("BANDED", BANDED, R"pbdoc(BandEd algorithm)pbdoc")
+            .value("HIRSCHBERG", HIRSCHBERG, R"pbdoc(Hirschberg algorithm)pbdoc");
+
+        py::class_<QuickedAligner>(m, "QuickedAligner",
+            R"pbdoc(
+QuickedAligner
+==============
+
+This class defines an aligner object that can be used to perform sequence alignment.
+It is initialized with default parameters and can be configured using various setter methods.
+            )pbdoc")
             .def(py::init<>())
-            .def("align", &QuickedAligner::align)
-            .def("setAlgorithm", &QuickedAligner::setAlgorithm)
-            .def("setOnlyScore", &QuickedAligner::setOnlyScore)
-            .def("setBandwidth", &QuickedAligner::setBandwidth)
-            .def("setWindowSize", &QuickedAligner::setWindowSize)
-            .def("setOverlapSize", &QuickedAligner::setOverlapSize)
-            .def("setForceScalar", &QuickedAligner::setForceScalar)
-            .def("setHEWThreshold", &QuickedAligner::setHEWThreshold)
-            .def("setHEWPercentage", &QuickedAligner::setHEWPercentage)
-            .def("getScore", &QuickedAligner::getScore)
-            .def("getCigar", &QuickedAligner::getCigar);
-
-        py::enum_<quicked_algo_t>(m, "QuickedAlgo")
-            .value("QUICKED", QUICKED)
-            .value("WINDOWED", WINDOWED)
-            .value("BANDED", BANDED)
-            .value("HIRSCHBERG", HIRSCHBERG)
-            .export_values();
-
-        py::enum_<quicked_status_t>(m, "QuickedStatus")
-            .value("QUICKED_OK", QUICKED_OK)
-            .value("QUICKED_ERROR", QUICKED_ERROR)
-            .value("QUICKED_FAIL_NON_CONVERGENCE", QUICKED_FAIL_NON_CONVERGENCE)
-            .value("QUICKED_UNKNOWN_ALGO", QUICKED_UNKNOWN_ALGO)
-            .value("QUICKED_EMPTY_SEQUENCE", QUICKED_EMPTY_SEQUENCE)
-            .value("QUICKED_UNIMPLEMENTED", QUICKED_UNIMPLEMENTED)
-            .value("QUICKED_WIP", QUICKED_WIP)
-            .export_values();
+            .def("align", &QuickedAligner::align, "pattern"_a, "text"_a,
+            R"pbdoc(Aligns the provided pattern and text according to the current parameters)pbdoc")
+            .def("setAlgorithm", &QuickedAligner::setAlgorithm, "algorithm"_a,
+            R"pbdoc(Sets the algorithm to be used for alignment)pbdoc")
+            .def("setOnlyScore", &QuickedAligner::setOnlyScore, "only_score"_a,
+            R"pbdoc(Sets whether only the score should be computed)pbdoc")
+            .def("setBandwidth", &QuickedAligner::setBandwidth, "bandwidth"_a,
+            R"pbdoc(Sets the bandwidth for BandEd alignment)pbdoc")
+            .def("setWindowSize", &QuickedAligner::setWindowSize, "window_size"_a,
+            R"pbdoc(Sets the window size for WindowEd alignment)pbdoc")
+            .def("setOverlapSize", &QuickedAligner::setOverlapSize, "overlap_size"_a,
+            R"pbdoc(Sets the overlap size for WindowEd alignment)pbdoc")
+            .def("setForceScalar", &QuickedAligner::setForceScalar, "force_scalar"_a,
+            R"pbdoc(Forces scalar computation (i.e., no SIMD instructions))pbdoc")
+            .def("setHEWThreshold", &QuickedAligner::setHEWThreshold, "hew_threshold"_a,
+            R"pbdoc(Sets the HEW threshold)pbdoc")
+            .def("setHEWPercentage", &QuickedAligner::setHEWPercentage, "hew_percentage"_a,
+            R"pbdoc(Sets the HEW percentage)pbdoc")
+            .def("getScore", &QuickedAligner::getScore, R"pbdoc(Gets the alignment score)pbdoc")
+            .def("getCigar", &QuickedAligner::getCigar, R"pbdoc(Gets the CIGAR string representing the alignment)pbdoc");
 
         py::register_exception<QuickedException>(m, "QuickedException");
-
     }
 }

@@ -2,3 +2,5 @@ build
 .built
 lib
 bin
+dist
+wheelhouse

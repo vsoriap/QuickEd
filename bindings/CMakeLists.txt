@@ -11,5 +11,7 @@ pybind11_add_module(pyquicked python/quicked.cpp cpp/quicked.cpp)
 set_target_properties(pyquicked PROPERTIES OUTPUT_NAME quicked)
 target_include_directories(pyquicked PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/cpp)
 target_link_libraries(pyquicked PRIVATE quicked)
+target_compile_options(pyquicked PRIVATE -fvisibility=hidden)
 
-install(TARGETS pyquicked DESTINATION .)
+install(TARGETS pyquicked DESTINATION . COMPONENT pyquicked)
+install(FILES python/quicked.pyi DESTINATION . COMPONENT pyquicked)
