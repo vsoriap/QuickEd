@@ -27,7 +27,10 @@
 
 #include <stdio.h>
 #include "vector.h"
+
+#ifdef __linux__
 #include <sys/mman.h>
+#endif
 
 /*
  * Configuration

@@ -37,7 +37,8 @@ file(GLOB FILE_LIST "${CMAKE_CURRENT_SOURCE_DIR}/bindings/*.py") # Get all *.py 
 foreach (FILE ${FILE_LIST})
     cmake_path(GET FILE STEM EXAMPLE) # Remove .py extension
 
-    add_test(NAME test_binding_${EXAMPLE}_py COMMAND ${PYTHON_EXECUTABLE} ${FILE})
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME test_binding_${EXAMPLE}_py COMMAND ${Python3_EXECUTABLE} ${FILE})
     set_tests_properties(test_binding_${EXAMPLE}_py PROPERTIES ENVIRONMENT PYTHONPATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
     set_tests_properties(test_binding_${EXAMPLE}_py PROPERTIES LABELS "examples")
 endforeach ()

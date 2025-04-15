@@ -4,26 +4,39 @@ project(quicked LANGUAGES C CXX)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
 
+if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    message(WARNING "32-bit builds are not tested. You may encounter issues.")
+endif()
+
+set(WIN_CLANG FALSE)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND WIN32)
+    set(WIN_CLANG TRUE)
+endif()
+
 include(CTest)
 enable_testing()
 
 # Options
 option(QUICKED_NONATIVE "Compile QuickEd for generic x86_64" OFF)
 option(QUICKED_FORCESCALAR "Compile QuickEd without vector extensions (SSE,AVX)" OFF)
+option(ASAN "Enable ASAN and UBSAN" OFF)
 
 # Set build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-option(ASAN "Enable ASAN and UBSAN" OFF)
 
 # Set compiler flags if Debug build
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(WARNING "Build type: ${CMAKE_BUILD_TYPE}")
 
     if (MSVC)
-        add_compile_options(/Od /Zi /W4 /WX /RTC1 /GS /analyze)
+        add_compile_options(/Od /Zi /W4 /WX /GS /analyze /permissive)
+        add_compile_options(/RTC1) # Enable runtime checks
+        add_compile_options(/wd4334 /wd4244 /wd4267 /wd6297 /wd6001 /wd6340 /wd6385
+                            /wd6011 /wd6308 /wd6387 /wd6262 /wd6336 /wd28182 /wd28183 /wd6326
+                            /wd4131 /wd4100 /wd28278 /wd6386 /wd6993) # Ignore warnings
     else()
         add_compile_options(-O0 -g -Wall -Wextra -Werror)
 
@@ -59,33 +72,54 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE INTERNAL "" FORCE) # Suppress CMake developer warnings
+
+    # Enable IPO/LTO if supported
+    if (NOT MINGW)
+        include(CheckIPOSupported)
+        check_ipo_supported(RESULT result OUTPUT output)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ${result})
+        if (NOT result)
+            message(WARNING "IPO/LTO is not supported: ${output}")
+        endif()
+    else()
+        message(WARNING "IPO/LTO has some rough edges on MinGW. It is disabled by default.")
+    endif()
+
     if (MSVC)
         add_compile_options(/O2 /GL)
-        add_link_options(/LTCG)
     else()
-        add_compile_options(-O3 -flto=auto)
+        add_compile_options(-O3)
     endif()
 endif()
 
 # Set global compiler flags
-if (NOT MSVC)
-    add_compile_options(-fPIC)
+if (NOT (WIN_CLANG OR MSVC))
+    add_compile_options(-fPIC) # PIC works on Linux (GCC and Clang), and Windows (GCC). Does not work on MSVC or Clang on Windows.
+endif()
+
+if (WIN_CLANG)
+    message(WARNING "USING WIN_CLANG")
+    add_compile_options(-Wno-initializer-overrides -Wno-format-nonliteral) # False positive
+endif()
+
+if (WIN32)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 endif()
 
 if (NOT QUICKED_NONATIVE)
     if (MSVC)
-        # /arch:AVX2 is the closest MSVC equivalent to -march=native with AVX2
-        if (NOT QUICKED_FORCESCALAR)
-            add_compile_options(/arch:AVX2)
-        endif()
+        message(WARNING "MSVC lacks '-march=native'. Set flags manually for optimal SSE4.2 and AVX2 performance.")
+        # add_compile_options(/arch:SSE4.2 /arch:AVX2) # Suggested flags if supported
+        # add_compile_definitions(USE_SSE) # If you enable /arch:SSE4.2, uncomment this line
     else()
         add_compile_options(-march=native)
     endif()
 else()
     if (MSVC)
-        # Default x86-64 baseline for MSVC is already reasonable; no extra flags needed unless AVX2 is forced
         if (NOT QUICKED_FORCESCALAR)
-            add_compile_options(/arch:AVX2)
+            add_compile_options(/arch:SSE4.2 /arch:AVX2) # Strictly speaking, it should be SSE4.1. But MSVC lacks this flag.
+            add_compile_definitions(USE_SSE) # MSVC do not define the macro when using /arch:SSE4.2
         endif()
     else()
         add_compile_options(-march=x86-64)

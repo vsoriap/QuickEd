@@ -242,8 +242,8 @@ void align_benchmark_parallel(void) {
   if (parameters.output_filename != NULL) {
     parameters.output_file = fopen(parameters.output_filename, "w");
   }
-  // Global configuration
-  align_input_t align_input[parameters.num_threads];
+
+  VLA_INIT(align_input_t, align_input, parameters.num_threads);
   for (int tid=0;tid<parameters.num_threads;++tid) {
     align_input_configure_global(align_input+tid);
   }
@@ -269,8 +269,9 @@ void align_benchmark_parallel(void) {
     #pragma omp parallel num_threads(parameters.num_threads)
     {
       int tid = omp_get_thread_num();
+      int seq_idx;
       #pragma omp for
-      for (int seq_idx=0;seq_idx<seqs_batch;++seq_idx) {
+      for (seq_idx=0;seq_idx<seqs_batch;++seq_idx) {
         // Configure sequence
         sequence_offset_t* const offset = sequence_buffer->offsets + seq_idx;
         align_input[tid].sequence_id = seqs_processed;

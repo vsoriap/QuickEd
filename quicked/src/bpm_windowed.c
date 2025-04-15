@@ -28,10 +28,14 @@
 #include "bpm_windowed.h"
 #include "bpm_commons.h"
 
-#ifndef __SSE4_1__
-#warning "SSE4.1 or higher is required for SIMD windows"
+#if defined(__SSE4_1__) || defined(USE_SSE) // MSVC manual flag
+    #include <immintrin.h>
 #else
-#include <immintrin.h>
+    #ifdef _MSC_VER
+        #pragma message("SSE4.1 or higher is required for SIMD windows")
+    #else
+        #warning "SSE4.1 or higher is required for SIMD windows"
+    #endif
 #endif
 
 /*

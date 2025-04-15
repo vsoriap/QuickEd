@@ -4,23 +4,29 @@ add_custom_target(tools)
 
 # Generate Dataset Tool
 add_executable(generate_dataset ${CMAKE_CURRENT_SOURCE_DIR}/generate_dataset/generate_dataset.c)
-target_link_libraries(generate_dataset m) # Link math library
-target_sources(generate_dataset PRIVATE ${CMAKE_SOURCE_DIR}/quicked_utils/src/commons.c)
+if(NOT (WIN_CLANG OR MSVC))
+    target_link_libraries(generate_dataset PRIVATE m) # Link math library
+endif()
+target_sources(generate_dataset PRIVATE ${CMAKE_SOURCE_DIR}/quicked_utils/src/commons.c ${CMAKE_SOURCE_DIR}/quicked_utils/src/getopt.c)
 add_dependencies(tools generate_dataset)
 
 # Align Benchmark Tool
 add_executable(align_benchmark)
 target_include_directories(align_benchmark PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/align_benchmark)
-target_link_libraries(align_benchmark PRIVATE m) # Link math library
+if(NOT (WIN_CLANG OR MSVC))
+    target_link_libraries(align_benchmark PRIVATE m) # Link math library
+endif()
 target_link_libraries(align_benchmark PRIVATE quicked)
 
 # Add OpenMP lib
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
-    target_link_libraries(align_benchmark PRIVATE OpenMP::OpenMP_CXX)
+    target_compile_options(align_benchmark PRIVATE ${OpenMP_CXX_FLAGS})
+    target_link_options(align_benchmark PRIVATE ${OpenMP_CXX_FLAGS})
 endif()
 if(OpenMP_C_FOUND)
-    target_link_libraries(align_benchmark PRIVATE OpenMP::OpenMP_C)
+    target_compile_options(align_benchmark PRIVATE ${OpenMP_C_FLAGS})
+    target_link_options(align_benchmark PRIVATE ${OpenMP_C_FLAGS})
 endif()
 
 add_subdirectory(align_benchmark/external/edlib EXCLUDE_FROM_ALL)
@@ -46,5 +52,9 @@ file(GLOB UTILS_SRCS
     ${PROJECT_SOURCE_DIR}/quicked_utils/src/profiler_timer.c
     ${PROJECT_SOURCE_DIR}/quicked_utils/src/sequence_buffer.c
 )
+if(MSVC OR WIN_CLANG)
+    list(APPEND UTILS_SRCS ${PROJECT_SOURCE_DIR}/quicked_utils/src/getopt.c)
+endif()
+
 target_sources(align_benchmark PRIVATE ${ALIGN_BMRK_SRCS} ${UTILS_SRCS} ${ALIGN_BENCH_SRCS})
 add_dependencies(tools align_benchmark) # TODO: Uncomment when ready

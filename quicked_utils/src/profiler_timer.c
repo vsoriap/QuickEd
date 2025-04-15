@@ -43,6 +43,12 @@ void timer_get_system_time(struct timespec *ts) {
   mach_port_deallocate(mach_task_self(),cclock);
   ts->tv_sec = mts.tv_sec;
   ts->tv_nsec = mts.tv_nsec;
+#elif _WIN32 // Windows does not have clock_gettime, use GetSystemTimePreciseAsFileTime
+  FILETIME ft;
+  GetSystemTimePreciseAsFileTime(&ft);
+  uint64_t time = ((uint64_t)ft.dwHighDateTime << 32) | (uint64_t)ft.dwLowDateTime;
+  ts->tv_sec = (long)(time / 1000000000ull);
+  ts->tv_nsec = (long)(time % 1000000000ull);
 #else
   clock_gettime(CLOCK_REALTIME,ts);
 #endif

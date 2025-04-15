@@ -27,12 +27,15 @@
 #include "quicked_utils/include/dna_text.h"
 #include "bpm_banded.h"
 #include "bpm_commons.h"
-#include <sys/mman.h>
 
 #ifndef __AVX2__
-#warning "AVX2 or higher is required for SIMD banded"
+    #ifdef _MSC_VER
+        #pragma message("AVX2 or higher is required for SIMD banded")
+    #else
+        #warning "AVX2 or higher is required for SIMD banded"
+    #endif
 #else
-#include <immintrin.h>
+    #include <immintrin.h>
 #endif
 
 
@@ -318,7 +321,7 @@ void bpm_compute_matrix_banded_cutoff(
     banded_matrix->lower_block = first_block_v;
 }
 
-static inline __attribute__((always_inline)) void compute_advance_block (
+static FORCE_INLINE void compute_advance_block (
     uint64_t* Pv, 
     uint64_t* Mv,
     const uint64_t *const PEQ,
@@ -430,7 +433,7 @@ void bpm_compute_matrix_banded_cutoff_score_avx(
                 __m256i MHout = MHin; 
                 __m256i PHout = PHout;
                 
-                #pragma GCC unroll(4)
+                PRAGMA_UNROLL(4)
                 for (i = first_block_v+3; i < first_block_v+7; i++) 
                 {
                     Pv_in = _mm256_permute4x64_epi64(Pv_in, 0x39);
@@ -570,7 +573,7 @@ void bpm_compute_matrix_banded_cutoff_score_avx(
                 MHout = MHin; 
                 PHout = PHin;
 
-                #pragma GCC unroll(4)
+                PRAGMA_UNROLL(4)
                 for (i = last_block_v-3; i <= last_block_v; i++) 
                 {
                     Pv_in = _mm256_permute4x64_epi64(Pv_in, 0x39);

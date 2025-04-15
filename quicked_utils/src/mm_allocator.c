@@ -283,7 +283,7 @@ void* mm_allocator_allocate(
     // Compute aligned memory
     void* memory_aligned = OFFSET_VOIDPTR(memory_base, sizeof(mm_allocator_reference_t) + align_bytes);
     if (align_bytes > 0) {
-      memory_aligned = OFFSET_VOIDPTR(memory_aligned, -((uintptr_t)memory_aligned % align_bytes));
+      memory_aligned = NEG_OFFSET_VOIDPTR(memory_aligned, (uintptr_t)memory_aligned % align_bytes);
     }
     // Set mm_reference
     mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
@@ -310,7 +310,7 @@ void* mm_allocator_allocate(
     // Compute aligned memory
     void* memory_aligned = OFFSET_VOIDPTR(memory_base, sizeof(mm_allocator_reference_t) + align_bytes);
     if (align_bytes > 0) {
-      memory_aligned = OFFSET_VOIDPTR(memory_aligned, -((uintptr_t)memory_aligned % align_bytes));
+      memory_aligned = NEG_OFFSET_VOIDPTR(memory_aligned, (uintptr_t)memory_aligned % align_bytes);
     }
     // Set reference
     mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
@@ -386,15 +386,15 @@ void mm_allocator_free_allocator_request(
   uint64_t num_requests = mm_allocator_segment_get_num_requests(segment);
   if (mm_reference->request_idx == num_requests-1) { // Is the last request?
     --num_requests;
-    mm_allocator_request_t* request =
+    mm_allocator_request_t* req =
         vector_get_mem(segment->requests,mm_allocator_request_t) + (num_requests-1);
-    while (num_requests>0 && MM_ALLOCATOR_REQUEST_IS_FREE(request)) {
+    while (num_requests>0 && MM_ALLOCATOR_REQUEST_IS_FREE(req)) {
       --num_requests; // Free request
-      --request;
+      --req;
     }
     // Update segment used
     if (num_requests > 0) {
-      segment->used = request->offset + request->size;
+      segment->used = req->offset + req->size;
       vector_set_used(segment->requests,num_requests);
     } else {
       // Segment fully freed

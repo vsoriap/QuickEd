@@ -31,7 +31,19 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
+#include <errno.h>
 #include <getopt.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#ifdef __linux__
+#include <sys/mman.h>
+#endif
+
+#ifdef _MSC_VER
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
 
 // #include <stdbool.h>
 // #include <float.h>
@@ -47,17 +59,18 @@
 // #include <pwd.h>
 // #include <stdarg.h>
 // #include <err.h>
-// #include <errno.h>
 // #include <assert.h>
 // #include <signal.h>
 
 /*
- * Macro Utils (Stringify)
+ * Macro Utils
  */
 #define STRINGIFY_(a) #a
 #define STRINGIFY(a) STRINGIFY_(a)
 #define SWAP(a,b) do {__typeof__(a) aux = a; a = b; b = aux;} while (0)
-
+#define REPEAT_8(x) x, x, x, x, x, x, x, x
+#define REPEAT_32(x) REPEAT_8(x), REPEAT_8(x), REPEAT_8(x), REPEAT_8(x)
+#define REPEAT_256(x) REPEAT_32(x), REPEAT_32(x), REPEAT_32(x), REPEAT_32(x)
 /*
  * Special Characters
  */
@@ -200,6 +213,10 @@ uint64_t rand_iid(const uint64_t min,const uint64_t max);
 
 void reverse_string(const char* in_string, char* out_string, uint64_t lenght);
 
+typedef long long ssize_t;
+ssize_t getline(char **restrict lineptr, size_t *restrict n, FILE *restrict stream);
+ssize_t getdelim(char **restrict lineptr, size_t *restrict n, int delim, FILE *restrict stream);
+
 /*
  * Parsing
  */
@@ -239,18 +256,29 @@ uint64_t nominal_prop_u64(const uint64_t base,const double factor);
 /*
  * Inline
  */
-#define FORCE_INLINE __attribute__((always_inline)) inline
-#define FORCE_NO_INLINE __attribute__ ((noinline))
+#if defined(_MSC_VER)
+  #define FORCE_INLINE __forceinline
+  #define FORCE_NO_INLINE __declspec(noinline)
+  #else
+  #define FORCE_INLINE __attribute__((always_inline)) inline
+  #define FORCE_NO_INLINE __attribute__((noinline))
+#endif
 
 /*
- * Vectorize
+ * Vectorize & unroll
  */
 #if defined(__clang__)
   #define PRAGMA_LOOP_VECTORIZE _Pragma("clang loop vectorize(enable)")
+  #define PRAGMA_UNROLL(n) _Pragma(STRINGIFY(clang loop unroll_count(n)))
 #elif defined(__GNUC__)
   #define PRAGMA_LOOP_VECTORIZE _Pragma("GCC ivdep")
+  #define PRAGMA_UNROLL(n) _Pragma(STRINGIFY(GCC unroll(n)))
+#elif defined(_MSC_VER)
+  #define PRAGMA_LOOP_VECTORIZE _Pragma("loop(ivdep)")
+  #define PRAGMA_UNROLL(n) //MSVC does not support unroll pragma
 #else
   #define PRAGMA_LOOP_VECTORIZE _Pragma("ivdep")
+  #define PRAGMA_UNROLL(n) _Pragma(STRINGIFY(unroll(n)))
 #endif
 
 /*
@@ -281,3 +309,14 @@ uint64_t nominal_prop_u64(const uint64_t base,const double factor);
 * Pointer utils
 */
 #define OFFSET_VOIDPTR(ptr,offset) ((void*)((uintptr_t)(ptr)+(offset)))
+#define NEG_OFFSET_VOIDPTR(ptr,offset) ((void*)((uintptr_t)(ptr)-(offset)))
+
+/*
+* VLAs
+*/
+#ifdef _MSC_VER
+  #include <malloc.h>
+  #define VLA_INIT(type, name, count) type* name = (type*)_malloca((count) * sizeof(type))
+#else
+  #define VLA_INIT(type, name, count) type name[count]
+#endif
