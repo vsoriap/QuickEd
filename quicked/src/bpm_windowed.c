@@ -60,17 +60,17 @@ void windowed_pattern_compile(
     const uint64_t total_memory = PEQ_size + 3 * aux_vector_size + 2 * score_size + (pattern_num_words64 + 1) * UINT64_SIZE;
     void *memory = mm_allocator_malloc(mm_allocator, total_memory);
     windowed_pattern->PEQ = memory;
-    memory += PEQ_size;
+    memory = OFFSET_VOIDPTR(memory, PEQ_size);
     windowed_pattern->P = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     windowed_pattern->M = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     windowed_pattern->level_mask = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     windowed_pattern->score = memory;
-    memory += score_size;
+    memory = OFFSET_VOIDPTR(memory, score_size);
     windowed_pattern->init_score = memory;
-    memory += score_size;
+    memory = OFFSET_VOIDPTR(memory, score_size);
     windowed_pattern->pattern_left = memory;
     // Init PEQ
     memset(windowed_pattern->PEQ, 0, PEQ_size);

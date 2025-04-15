@@ -58,11 +58,11 @@ void banded_pattern_compile(
     const uint64_t total_memory = PEQ_size + 3 * aux_vector_size + (pattern_num_words64)*UINT64_SIZE;
     void *memory = mm_allocator_malloc(mm_allocator, total_memory);
     banded_pattern->PEQ = memory;
-    memory += PEQ_size;
+    memory = OFFSET_VOIDPTR(memory, PEQ_size);
     banded_pattern->P = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     banded_pattern->M = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     banded_pattern->level_mask = memory;
     // Init PEQ
     memset(banded_pattern->PEQ, 0, PEQ_size);

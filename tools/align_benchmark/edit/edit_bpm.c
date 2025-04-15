@@ -90,12 +90,12 @@ void edit_bpm_pattern_compile(
   const uint64_t score_size = pattern_num_words64*UINT64_SIZE;
   const uint64_t total_memory = PEQ_size + 3*aux_vector_size + 2*score_size + (pattern_num_words64+1)*UINT64_SIZE;
   void* memory = mm_allocator_malloc(mm_allocator,total_memory);
-  bpm_pattern->PEQ = memory; memory += PEQ_size;
-  bpm_pattern->P = memory; memory += aux_vector_size;
-  bpm_pattern->M = memory; memory += aux_vector_size;
-  bpm_pattern->level_mask = memory; memory += aux_vector_size;
-  bpm_pattern->score = memory; memory += score_size;
-  bpm_pattern->init_score = memory; memory += score_size;
+  bpm_pattern->PEQ = memory; memory = OFFSET_VOIDPTR(memory, PEQ_size);
+  bpm_pattern->P = memory; memory = OFFSET_VOIDPTR(memory, aux_vector_size);
+  bpm_pattern->M = memory; memory = OFFSET_VOIDPTR(memory, aux_vector_size);
+  bpm_pattern->level_mask = memory; memory = OFFSET_VOIDPTR(memory, aux_vector_size);
+  bpm_pattern->score = memory; memory = OFFSET_VOIDPTR(memory, score_size);
+  bpm_pattern->init_score = memory; memory = OFFSET_VOIDPTR(memory, score_size);
   bpm_pattern->pattern_left = memory;
   // Init PEQ
   memset(bpm_pattern->PEQ,0,PEQ_size);

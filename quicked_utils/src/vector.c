@@ -75,8 +75,8 @@ void vector_reserve(
     }
   }
   if (zero_mem) {
-    memset(vector->memory+vector->used*vector->element_size,0,
-        (vector->elements_allocated-vector->used)*vector->element_size);
+    memset(OFFSET_VOIDPTR(vector->memory, vector->used * vector->element_size), 0,
+      (vector->elements_allocated - vector->used) * vector->element_size);
   }
 }
 /*

@@ -278,15 +278,15 @@ void* mm_allocator_allocate(
 #endif
   if (segment != NULL) {
     // Allocate memory
-    void* const memory_base = segment->memory + segment->used;
+    void* const memory_base = OFFSET_VOIDPTR(segment->memory, segment->used);
     if (zero_mem) memset(memory_base,0,num_bytes_allocated); // Set zero
     // Compute aligned memory
-    void* memory_aligned = memory_base + sizeof(mm_allocator_reference_t) + align_bytes;
+    void* memory_aligned = OFFSET_VOIDPTR(memory_base, sizeof(mm_allocator_reference_t) + align_bytes);
     if (align_bytes > 0) {
-      memory_aligned = memory_aligned - ((uintptr_t)memory_aligned % align_bytes);
+      memory_aligned = OFFSET_VOIDPTR(memory_aligned, -((uintptr_t)memory_aligned % align_bytes));
     }
     // Set mm_reference
-    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)(memory_aligned - sizeof(mm_allocator_reference_t));
+    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
     mm_reference->segment_idx = segment->idx;
     mm_reference->request_idx = mm_allocator_segment_get_num_requests(segment);
     // Add request
@@ -308,12 +308,12 @@ void* mm_allocator_allocate(
     void* const memory_base = malloc(num_bytes_allocated);
     if (zero_mem) memset(memory_base,0,num_bytes_allocated); // Set zero
     // Compute aligned memory
-    void* memory_aligned = memory_base + sizeof(mm_allocator_reference_t) + align_bytes;
+    void* memory_aligned = OFFSET_VOIDPTR(memory_base, sizeof(mm_allocator_reference_t) + align_bytes);
     if (align_bytes > 0) {
-      memory_aligned = memory_aligned - ((uintptr_t)memory_aligned % align_bytes);
+      memory_aligned = OFFSET_VOIDPTR(memory_aligned, -((uintptr_t)memory_aligned % align_bytes));
     }
     // Set reference
-    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)(memory_aligned - sizeof(mm_allocator_reference_t));
+    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
     mm_reference->segment_idx = UINT32_MAX;
     mm_reference->request_idx = vector_get_used(mm_allocator->malloc_requests);
     // Add malloc-request
@@ -413,7 +413,7 @@ void mm_allocator_free(
   free(memory);
 #else
   // Get reference
-  void* const effective_memory = memory - sizeof(mm_allocator_reference_t);
+  void* const effective_memory = OFFSET_VOIDPTR(memory, -((intptr_t)sizeof(mm_allocator_reference_t)));
   mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*) effective_memory;
   if (mm_reference->segment_idx == UINT32_MAX) {
     // Free malloc memory

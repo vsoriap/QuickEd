@@ -37,7 +37,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
         # Extra debug flags
         add_compile_options(-Wfloat-equal -Wformat=2 -Wshift-overflow -Wdouble-promotion -Wunused-macros
-                            -Wwrite-strings -Wcast-qual -Wswitch-default -Wswitch-enum)
+                            -Wwrite-strings -Wcast-qual -Wswitch-default -Wswitch-enum -Wpointer-arith)
 
         add_compile_options("$<$<C_COMPILER_ID:GNU>:-Wduplicated-branches;-Wduplicated-cond;-Wlogical-op>")
 

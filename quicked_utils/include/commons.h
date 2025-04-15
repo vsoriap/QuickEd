@@ -276,3 +276,8 @@ uint64_t nominal_prop_u64(const uint64_t base,const double factor);
 * Unused variable
 */
 #define UNUSED(x) (void)(x)
+
+/*
+* Pointer utils
+*/
+#define OFFSET_VOIDPTR(ptr,offset) ((void*)((uintptr_t)(ptr)+(offset)))
