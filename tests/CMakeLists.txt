@@ -30,4 +30,4 @@ set_property(TEST test_l1000000_n10_e10 PROPERTY
     ENVIRONMENT "BIN_DIR=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 add_test(NAME test_MiniION_align_benchmark COMMAND $<TARGET_FILE:align_benchmark> -i ${CMAKE_CURRENT_SOURCE_DIR}/test_data/ONT.MiniION.1.seq -c "score" -v)
-set_property(TEST test_l1000000_n10_e10 PROPERTY FAIL_REGULAR_EXPRESSION "INACCURATE SCORE")
+set_property(TEST test_MiniION_align_benchmark PROPERTY FAIL_REGULAR_EXPRESSION "INACCURATE SCORE")
