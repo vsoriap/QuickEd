@@ -235,14 +235,13 @@ void windowed_compute_window(
     int64_t steps_v = (pos_v_fi - pos_v) / UINT64_LENGTH + 1;
     int64_t steps_h = pos_h_fi - pos_h;
     uint64_t shift = pos_v % UINT64_LENGTH;
-    uint64_t shift_mask = shift ? 0xFFFFFFFFFFFFFFFFULL : 0ULL;
     int64_t pos_v_block = (pos_v / UINT64_LENGTH);
 
     for (int64_t i = 0; i < steps_v; ++i)
     {
         for (uint64_t enc_char = 0; enc_char < BPM_ALPHABET_LENGTH; enc_char++)
         {
-            const uint64_t Eq = PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << (BPM_W64_LENGTH - shift)) & shift_mask);
+            const uint64_t Eq = (PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift) | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << ((BPM_W64_LENGTH - shift) & (UINT64_LENGTH - 1))));
             PEQ_window[BPM_PATTERN_PEQ_IDX(i, enc_char)] = Eq;
         }
     }
@@ -313,7 +312,6 @@ void windowed_compute_window_sse(
     int64_t steps_v = (pos_v_fi - pos_v) / UINT64_LENGTH + 1;
     int64_t steps_h = pos_h_fi - pos_h;
     uint64_t shift = pos_v % UINT64_LENGTH;
-    uint64_t shift_mask = shift ? 0xFFFFFFFFFFFFFFFFULL : 0ULL;
     int64_t pos_v_block = (pos_v / UINT64_LENGTH);
 
     // Generate aligned PEQ vectors
@@ -321,7 +319,7 @@ void windowed_compute_window_sse(
     {
         for (uint64_t enc_char = 0; enc_char < BPM_ALPHABET_LENGTH; enc_char++)
         {
-            const uint64_t Eq = PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << (BPM_W64_LENGTH - shift)) & shift_mask);
+            const uint64_t Eq = (PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift) | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << ((BPM_W64_LENGTH - shift) & (UINT64_LENGTH - 1))));
             PEQ_window[BPM_PATTERN_PEQ_IDX(i, enc_char)] = Eq;
         }
     }

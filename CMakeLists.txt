@@ -26,7 +26,6 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-
 # Set compiler flags if Debug build
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(WARNING "Build type: ${CMAKE_BUILD_TYPE}")
@@ -61,7 +60,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         if (ASAN)
             message(WARNING "ASAN and UBSAN enabled")
             add_compile_options(-fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fno-omit-frame-pointer)
-            add_compile_options(-fno-sanitize=shift) # Ignore shift sanitizer (false positives, as we do some 64-bit shifts)
             add_link_options(-fsanitize=address -fsanitize=undefined)
         endif()
 
