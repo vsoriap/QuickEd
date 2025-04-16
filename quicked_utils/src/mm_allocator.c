@@ -413,7 +413,7 @@ void mm_allocator_free(
   free(memory);
 #else
   // Get reference
-  void* const effective_memory = OFFSET_VOIDPTR(memory, -((intptr_t)sizeof(mm_allocator_reference_t)));
+  void* const effective_memory = NEG_OFFSET_VOIDPTR(memory, (intptr_t)sizeof(mm_allocator_reference_t));
   mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*) effective_memory;
   if (mm_reference->segment_idx == UINT32_MAX) {
     // Free malloc memory

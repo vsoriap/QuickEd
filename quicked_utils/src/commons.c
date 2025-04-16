@@ -87,6 +87,7 @@ void reverse_string(const char* in_string, char *out_string, uint64_t lenght)
     }
 }
 
+#ifdef _WIN32
 static void fseterr(FILE *fp)
 {
     struct file { // Undocumented implementation detail
@@ -156,3 +157,4 @@ ssize_t getline(char **restrict lineptr, size_t *restrict n, FILE *restrict stre
 {
     return getdelim(lineptr, n, '\n', stream);
 }
+#endif

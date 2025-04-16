@@ -32,9 +32,11 @@
 #include <string.h>
 #include <math.h>
 #include <errno.h>
-#include <getopt.h>
 #ifdef _WIN32
 #include <windows.h>
+#include <_getopt.h>
+#else
+#include <getopt.h>
 #endif
 #ifdef __linux__
 #include <sys/mman.h>
@@ -213,9 +215,11 @@ uint64_t rand_iid(const uint64_t min,const uint64_t max);
 
 void reverse_string(const char* in_string, char* out_string, uint64_t lenght);
 
+#ifdef _WIN32
 typedef long long ssize_t;
 ssize_t getline(char **restrict lineptr, size_t *restrict n, FILE *restrict stream);
 ssize_t getdelim(char **restrict lineptr, size_t *restrict n, int delim, FILE *restrict stream);
+#endif
 
 /*
  * Parsing
