@@ -475,7 +475,7 @@ void windowed_backtrace(
     {
         const uint8_t block = (v - v_min) / UINT64_LENGTH;
         const uint64_t bdp_idx = BPM_PATTERN_BDP_IDX((h - h_min + 1), num_words64, block);
-        const uint64_t mask = 1L << (v - v_min % UINT64_LENGTH);
+        const uint64_t mask = 1UL << ((v - v_min) % UINT64_LENGTH);
 
         if (text[h] == pattern[v])
         {
@@ -531,7 +531,7 @@ void windowed_backtrace_score_only(
     {
         const uint8_t block = (v - v_min) / UINT64_LENGTH;
         const uint64_t bdp_idx = BPM_PATTERN_BDP_IDX((h - h_min + 1), num_words64, block);
-        const uint64_t mask = 1L << (v - v_min % UINT64_LENGTH);
+        const uint64_t mask = 1UL << ((v - v_min) % UINT64_LENGTH);
 
         if (Pv[bdp_idx] & mask)
         {
