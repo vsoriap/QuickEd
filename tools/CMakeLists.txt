@@ -20,19 +20,35 @@ target_link_libraries(align_benchmark PRIVATE quicked)
 
 # Add OpenMP lib
 find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-    target_compile_options(align_benchmark PRIVATE ${OpenMP_CXX_FLAGS})
-    target_link_options(align_benchmark PRIVATE ${OpenMP_CXX_FLAGS})
-endif()
-if(OpenMP_C_FOUND)
-    target_compile_options(align_benchmark PRIVATE ${OpenMP_C_FLAGS})
-    target_link_options(align_benchmark PRIVATE ${OpenMP_C_FLAGS})
+if(OpenMP_FOUND)
+    if(WIN_CLANG)
+        target_compile_options(align_benchmark PRIVATE /openmp)
+        target_link_libraries(align_benchmark PRIVATE libomp)
+    else()
+        if(OpenMP_CXX_FOUND)
+            target_compile_options(align_benchmark PRIVATE ${OpenMP_CXX_FLAGS})
+            target_link_options(align_benchmark PRIVATE ${OpenMP_CXX_FLAGS})
+        endif()
+        if(OpenMP_C_FOUND)
+            target_compile_options(align_benchmark PRIVATE ${OpenMP_C_FLAGS})
+            target_link_options(align_benchmark PRIVATE ${OpenMP_C_FLAGS})
+        endif()
+    endif()
 endif()
 
 add_subdirectory(align_benchmark/external/edlib EXCLUDE_FROM_ALL)
 target_link_libraries(align_benchmark PRIVATE edlib)
 
-file(GLOB ALIGN_BENCH_SRCS 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # For debug builds, disable the warnings, as we don't have control over Edlib
+    if(MSVC)
+        target_compile_options(edlib PRIVATE /w)
+    else()
+        target_compile_options(edlib PRIVATE -w)
+    endif()
+endif()
+
+file(GLOB ALIGN_BENCH_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/align_benchmark/edit/edit_bpm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/align_benchmark/edit/edit_dp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/align_benchmark/benchmark/benchmark_edit.c

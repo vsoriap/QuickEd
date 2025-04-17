@@ -515,11 +515,11 @@ int cigar_sprint_SAM_CIGAR(
   for (i=0;i<cigar_length;++i) {
     const int op_idx = cigar_buffer[i] & 0xf;
     if (op_idx <= 8) {
-      cursor += snprintf(buffer+cursor,buf_size,"%d%c",
+      cursor += snprintf(buffer+cursor,buf_size,"%u%c",
           cigar_buffer[i]>>4,
           "MIDN---=X"[cigar_buffer[i]&0xf]);
-    } else {
-      cursor += snprintf(buffer+cursor,buf_size,"%d%c",
+        } else {
+      cursor += snprintf(buffer+cursor,buf_size,"%u%c",
           cigar_buffer[i]>>4,'?');
     }
   }

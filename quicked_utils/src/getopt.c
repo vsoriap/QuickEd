@@ -49,7 +49,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef _MSC_VER
+#ifdef _WIN32
  #include <errno.h>
  #include <stdlib.h>
  #include <string.h>

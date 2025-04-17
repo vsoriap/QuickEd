@@ -156,9 +156,9 @@ void edit_bpm_matrix_allocate(
   bpm_matrix->Mv = Mv;
   bpm_matrix->Pv = Pv;
   // CIGAR
-  bpm_matrix->cigar = cigar_new(pattern_length+text_length,mm_allocator);
-  bpm_matrix->cigar->end_offset = pattern_length + text_length;
-  bpm_matrix->cigar->begin_offset = pattern_length + text_length - 1;
+  bpm_matrix->cigar = cigar_new((int)(pattern_length+text_length),mm_allocator);
+  bpm_matrix->cigar->end_offset = (int)(pattern_length + text_length);
+  bpm_matrix->cigar->begin_offset = (int)(pattern_length + text_length - 1);
 }
 void edit_bpm_matrix_free(
     bpm_matrix_t* const bpm_matrix,
@@ -179,7 +179,7 @@ void edit_bpm_reset_search_cutoff(
     const int64_t* const init_score,
     const uint64_t max_distance) {
   // Calculate the top level (maximum bit-word for cut-off purposes)
-  const uint8_t y = (max_distance>0) ? (max_distance+(BPM_W64_LENGTH-1))/BPM_W64_LENGTH : 1;
+  const uint8_t y = (uint8_t)((max_distance>0) ? (max_distance+(BPM_W64_LENGTH-1))/BPM_W64_LENGTH : 1);
   *top_level = y;
   // Reset score,P,M
   uint64_t i;
@@ -207,7 +207,7 @@ void edit_bpm_compute_matrix(
   uint64_t* const Pv = bpm_matrix->Pv;
   uint64_t* const Mv = bpm_matrix->Mv;
   const uint64_t max_distance__1 = max_distance+1;
-  const uint8_t top = num_words64-1;
+  const uint8_t top = (uint8_t)(num_words64-1);
   uint8_t top_level;
   edit_bpm_reset_search_cutoff(&top_level,Pv,Mv,score,init_score,max_distance);
   // Advance in DP-bit_encoded matrix
@@ -294,9 +294,9 @@ void edit_bpm_backtrace_matrix(
   int64_t h = bpm_matrix->min_score_column;
   int64_t v = pattern_length - 1;
   while (v >= 0 && h >= 0) {
-    const uint8_t block = v / UINT64_LENGTH;
+    const uint8_t block = (uint8_t)(v / UINT64_LENGTH);
     const uint64_t bdp_idx = BPM_PATTERN_BDP_IDX(h+1,num_words64,block);
-    const uint64_t mask = 1L << (v % UINT64_LENGTH);
+    const uint64_t mask = 1ULL << (v % UINT64_LENGTH);
     // CIGAR operation Test
     if (Pv[bdp_idx] & mask) {
       operations[op_sentinel--] = 'D';

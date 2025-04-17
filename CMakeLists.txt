@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-    message(WARNING "32-bit builds are not tested. You may encounter issues.")
+    message(FATAL_ERROR "32-bit builds are not supported. Please use 64-bit builds.")
 endif()
 
 set(WIN_CLANG FALSE)
@@ -31,11 +31,16 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(WARNING "Build type: ${CMAKE_BUILD_TYPE}")
 
     if (MSVC)
-        add_compile_options(/Od /Zi /W4 /WX /GS /analyze /permissive)
-        add_compile_options(/RTC1) # Enable runtime checks
-        add_compile_options(/wd4334 /wd4244 /wd4267 /wd6297 /wd6001 /wd6340 /wd6385
-                            /wd6011 /wd6308 /wd6387 /wd6262 /wd6336 /wd28182 /wd28183 /wd6326
-                            /wd4131 /wd4100 /wd28278 /wd6386 /wd6993) # Ignore warnings
+        add_compile_options(/Zi /W4 /WX /analyze)
+        add_compile_options(/wd4244 /wd6001 /wd6011 /wd6262 /wd6308 /wd6326 /wd6336
+                            /wd6385 /wd6386 /wd6387 /wd6993 /wd28182 /wd28183) # Ignore warnings
+
+        # Enable address sanitizer
+        if (ASAN)
+            message(WARNING "ASAN and Runtime Checkers enabled")
+            add_compile_options(/fsanitize=address)
+            add_compile_options(/RTC1 /GS) # Enable runtime checks
+        endif()
     else()
         add_compile_options(-O0 -g -Wall -Wextra -Werror)
 
@@ -49,7 +54,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
         # Extra debug flags
         add_compile_options(-Wfloat-equal -Wformat=2 -Wshift-overflow -Wdouble-promotion -Wunused-macros
-                            -Wwrite-strings -Wcast-qual -Wswitch-default -Wswitch-enum -Wpointer-arith)
+                            -Wwrite-strings -Wswitch-default -Wswitch-enum -Wpointer-arith)
+        add_compile_options(-Wno-cast-qual) # Ignore warning (TODO: fix this)
 
         add_compile_options("$<$<C_COMPILER_ID:GNU>:-Wduplicated-branches;-Wduplicated-cond;-Wlogical-op>")
 
@@ -59,7 +65,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         # Enable address sanitizer
         if (ASAN)
             message(WARNING "ASAN and UBSAN enabled")
-            add_compile_options(-fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fno-omit-frame-pointer)
+            add_compile_options(-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
             add_link_options(-fsanitize=address -fsanitize=undefined)
         endif()
 
@@ -86,7 +92,12 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     endif()
 
     if (MSVC)
-        add_compile_options(/O2 /GL)
+        add_compile_options(/O2 /Ot /Oi)
+        if (NOT WIN_CLANG)
+            add_compile_options(/GL)
+        else()
+            # add_link_options(/LTCG)
+        endif()
     else()
         add_compile_options(-O3)
     endif()
@@ -98,7 +109,6 @@ if (NOT (WIN_CLANG OR MSVC))
 endif()
 
 if (WIN_CLANG)
-    message(WARNING "USING WIN_CLANG")
     add_compile_options(-Wno-initializer-overrides -Wno-format-nonliteral) # False positive
 endif()
 

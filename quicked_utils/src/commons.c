@@ -144,7 +144,7 @@ ssize_t getdelim(char **restrict lineptr, size_t *restrict n, int delim, FILE *r
             *lineptr = newptr;
             *n = newn;
         }
-        (*lineptr)[nread++] = c;
+        (*lineptr)[nread++] = (char)c;
     }
     if (c == EOF && nread == 0) {
         return -1;

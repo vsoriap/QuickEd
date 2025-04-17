@@ -47,7 +47,7 @@ int main(void) {
     // Align the sequences!
     printf("Aligning '%s' and '%s' using Windowed (Only Score)\n", pattern, text);
 
-    status = quicked_align(&aligner, pattern, strlen(pattern), text, strlen(text));
+    status = quicked_align(&aligner, pattern, (int)strlen(pattern), text, (int)strlen(text));
     if (quicked_check_error(status)) {
         fprintf(stderr, "%s", quicked_status_msg(status));
         return 1;

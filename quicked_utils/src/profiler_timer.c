@@ -98,13 +98,13 @@ uint64_t timer_get_max_ns(const profiler_timer_t* const timer) {
   return counter_get_max(&timer->time_ns);
 }
 uint64_t timer_get_mean(const profiler_timer_t* const timer) {
-  return counter_get_mean(&timer->time_ns);
+  return (uint64_t)counter_get_mean(&timer->time_ns);
 }
 uint64_t timer_get_variance(const profiler_timer_t* const timer) {
-  return counter_get_variance(&timer->time_ns);
+  return (uint64_t)counter_get_variance(&timer->time_ns);
 }
 uint64_t timer_get_stddev(const profiler_timer_t* const timer) {
-  return counter_get_stddev(&timer->time_ns);
+  return (uint64_t)counter_get_stddev(&timer->time_ns);
 }
 void timer_print_total(
     FILE* const stream,

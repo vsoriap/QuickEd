@@ -287,13 +287,13 @@ void* mm_allocator_allocate(
     }
     // Set mm_reference
     mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
-    mm_reference->segment_idx = segment->idx;
-    mm_reference->request_idx = mm_allocator_segment_get_num_requests(segment);
+    mm_reference->segment_idx = (uint32_t)segment->idx;
+    mm_reference->request_idx = (uint32_t)mm_allocator_segment_get_num_requests(segment);
     // Add request
     mm_allocator_request_t* request;
     vector_alloc_new(segment->requests,mm_allocator_request_t,request);
-    request->offset = segment->used;
-    request->size = num_bytes_allocated;
+    request->offset = (uint32_t)segment->used;
+    request->size = (uint32_t)num_bytes_allocated;
 #ifdef MM_ALLOCATOR_LOG
     request->timestamp = (mm_allocator->request_ticker)++;
     request->func_name = (char*)func_name;
@@ -315,7 +315,7 @@ void* mm_allocator_allocate(
     // Set reference
     mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
     mm_reference->segment_idx = UINT32_MAX;
-    mm_reference->request_idx = vector_get_used(mm_allocator->malloc_requests);
+    mm_reference->request_idx = (uint32_t)vector_get_used(mm_allocator->malloc_requests);
     // Add malloc-request
     mm_malloc_request_t* request;
     vector_alloc_new(mm_allocator->malloc_requests,mm_malloc_request_t,request);
@@ -359,7 +359,7 @@ void mm_allocator_free_malloc_request(
     for (i=0;i<num_requests;++i) {
       if (requests[i].size > 0) {
         requests[busy_requests] = requests[i];
-        requests[busy_requests].reference->request_idx = busy_requests;
+        requests[busy_requests].reference->request_idx = (uint32_t)busy_requests;
         ++busy_requests;
       }
     }
@@ -586,7 +586,7 @@ void mm_allocator_print(
   uint64_t bytes_used_malloc, bytes_used_allocator;
   uint64_t bytes_free_available, bytes_free_fragmented;
   mm_allocator_get_occupation(mm_allocator,&bytes_used_malloc,&bytes_used_allocator,&bytes_free_available,&bytes_free_fragmented);
-  const float bytes_total = num_segments * segment_size;
+  const float bytes_total = (float)(num_segments * segment_size);
   const uint64_t bytes_free = bytes_free_available + bytes_free_fragmented;
   fprintf(stream,"    => Memory.used   %" PRIu64 " (%2.1f %%)\n",
       bytes_used_allocator,(double)(100.0f*(float)bytes_used_allocator/bytes_total));

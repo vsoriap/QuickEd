@@ -168,8 +168,8 @@ void banded_matrix_allocate(
     banded_matrix->Pv = Pv;
     banded_matrix->scores = scores;
     // CIGAR
-    banded_matrix->cigar = cigar_new(pattern_length + text_length,mm_allocator);
-    banded_matrix->cigar->end_offset = pattern_length + text_length;
+    banded_matrix->cigar = cigar_new((int)(pattern_length + text_length),mm_allocator);
+    banded_matrix->cigar->end_offset = (int)(pattern_length + text_length);
 }
 
 void banded_matrix_free(
@@ -316,7 +316,7 @@ void bpm_compute_matrix_banded_cutoff(
     {
         final_score = scores[(banded_pattern->pattern_length - 1) / BPM_W64_LENGTH];
     }
-    banded_matrix->cigar->score = final_score;
+    banded_matrix->cigar->score = (int)final_score;
     banded_matrix->higher_block = last_block_v;
     banded_matrix->lower_block = first_block_v;
 }
@@ -788,7 +788,7 @@ void bpm_compute_matrix_banded_cutoff_score_avx(
     {
         final_score = scores[(banded_pattern->pattern_length - 1) / BPM_W64_LENGTH];
     }
-    banded_matrix->cigar->score = final_score;
+    banded_matrix->cigar->score = (int)final_score;
     banded_matrix->higher_block = last_block_v;
     banded_matrix->lower_block = first_block_v;
 }
@@ -964,7 +964,7 @@ void bpm_compute_matrix_banded_cutoff_score(
     {
         final_score = scores[(banded_pattern->pattern_length - 1) / BPM_W64_LENGTH];
     }
-    banded_matrix->cigar->score = final_score;
+    banded_matrix->cigar->score = (int)final_score;
     banded_matrix->higher_block = last_block_v;
     banded_matrix->lower_block = first_block_v;
 }
@@ -983,7 +983,7 @@ void banded_backtrace_matrix_cutoff(
     const uint64_t *const Mv = banded_matrix->Mv;
     char *const operations = banded_matrix->cigar->operations;
     int op_sentinel = banded_matrix->cigar->end_offset - 1;
-    const int effective_bandwidth_blocks = banded_matrix->effective_bandwidth_blocks;
+    const int effective_bandwidth_blocks = (int)(banded_matrix->effective_bandwidth_blocks);
     const int64_t prologue_columns = banded_matrix->prolog_column_blocks;
 
     // Retrieve the alignment. Store the match
@@ -1001,8 +1001,8 @@ void banded_backtrace_matrix_cutoff(
         const int64_t block_v_r = effective_v_r / BPM_W64_LENGTH;
         const int64_t bdp_idx = BPM_PATTERN_BDP_IDX(h, num_words64, block_v);
         const int64_t bdp_idx_r = BPM_PATTERN_BDP_IDX(h + 1, num_words64, block_v_r);
-        const uint64_t mask = 1UL << (effective_v % BPM_W64_LENGTH);
-        const uint64_t mask_r = 1UL << (effective_v_r % BPM_W64_LENGTH);
+        const uint64_t mask = 1ULL << (effective_v % BPM_W64_LENGTH);
+        const uint64_t mask_r = 1ULL << (effective_v_r % BPM_W64_LENGTH);
 
         // CIGAR operation Test
         if (Pv[bdp_idx_r] & mask_r)
