@@ -15,5 +15,5 @@ if (NOT MSVC)
     target_compile_options(pyquicked PRIVATE -fvisibility=hidden)
 endif()
 
-install(TARGETS pyquicked DESTINATION . COMPONENT pyquicked)
-install(FILES python/quicked.pyi DESTINATION . COMPONENT pyquicked)
+install(TARGETS pyquicked DESTINATION . COMPONENT pyquicked EXCLUDE_FROM_ALL)
+install(FILES python/quicked.pyi DESTINATION . COMPONENT pyquicked EXCLUDE_FROM_ALL)
