@@ -21,7 +21,7 @@ target_link_libraries(align_benchmark PRIVATE quicked)
 # Add OpenMP lib
 find_package(OpenMP)
 if(OpenMP_FOUND)
-    if(WIN_CLANG)
+    if(WIN_CLANG AND MSVC) # Clang with MSVC-like CLI
         target_compile_options(align_benchmark PRIVATE /openmp)
         target_link_libraries(align_benchmark PRIVATE libomp)
     else()

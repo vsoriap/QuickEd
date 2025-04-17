@@ -1,5 +1,3 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 name: Build and Test
 
 on:
@@ -19,13 +17,15 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
-      # fail-fast: false
-
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-24.04, macos-13, windows-2022]
         build_type: [Debug]
-        compiler: [ {cpp: g++, c: gcc}, {cpp: clang++, c: clang} ]
+        compiler: [ {cpp: g++, c: gcc}, {cpp: clang++, c: clang}, {cpp: cl, c: cl} ]
+        exclude:
+          - os: ubuntu-24.04
+            compiler: {cpp: cl, c: cl}
+          - os: macos-13
+            compiler: {cpp: cl, c: cl}
 
     steps:
     - uses: actions/checkout@v4
@@ -53,9 +53,15 @@ jobs:
       run: cmake --build ${{ steps.strings.outputs.build-dir }} --config ${{ matrix.build_type }} --parallel 2
 
     - name: Install
-      run: sudo cmake --install ${{ steps.strings.outputs.build-dir }} --config ${{ matrix.build_type }} # Test if install works
+      run: cmake --install ${{ steps.strings.outputs.build-dir }} --config ${{ matrix.build_type }} --prefix ./test-install
 
     - name: Run Tests
+      shell: bash
+      working-directory: ${{ steps.strings.outputs.build-dir }}
       run: |
-        cd ${{ steps.strings.outputs.build-dir }}
-        ctest --build-config ${{ matrix.build_type }} --output-on-failure -E edlib_tests
+        if [[ "${{ matrix.os }}" == "windows-2022" ]]; then
+          # The test_binding_basic_py test does not appear to be working on Windows CI's
+          ctest --build-config ${{ matrix.build_type }} --output-on-failure -E "edlib_tests|test_binding_basic_py"
+        else
+          ctest --build-config ${{ matrix.build_type }} --output-on-failure -E edlib_tests
+        fi
