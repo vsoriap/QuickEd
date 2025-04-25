@@ -61,8 +61,8 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-dir }}
       run: |
         if [[ "${{ matrix.os }}" == "windows-2022" ]]; then
-          # The test_binding_basic_py test does not appear to be working on Windows CI's
-          ctest --build-config ${{ matrix.build_type }} --output-on-failure -E "edlib_tests|test_binding_basic_py"
+          # Python tests do not seem to work on Windows CI environments
+          ctest --build-config ${{ matrix.build_type }} --output-on-failure -E "edlib_tests|test_binding_basic_py|test_binding_align_benchmark_py"
         else
           ctest --build-config ${{ matrix.build_type }} --output-on-failure -E edlib_tests
         fi

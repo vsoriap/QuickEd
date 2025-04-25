@@ -35,11 +35,12 @@ endforeach ()
 # Python Binding Examples
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-file(GLOB FILE_LIST "${CMAKE_CURRENT_SOURCE_DIR}/bindings/*.py") # Get all *.py files in this directory
-foreach (FILE ${FILE_LIST})
-    cmake_path(GET FILE STEM EXAMPLE) # Remove .py extension
+add_test(NAME test_binding_basic_py COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/bindings/basic.py)
+set_tests_properties(test_binding_basic_py PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+set_tests_properties(test_binding_basic_py PROPERTIES LABELS "examples")
 
-    add_test(NAME test_binding_${EXAMPLE}_py COMMAND ${Python3_EXECUTABLE} ${FILE})
-    set_tests_properties(test_binding_${EXAMPLE}_py PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-    set_tests_properties(test_binding_${EXAMPLE}_py PROPERTIES LABELS "examples")
-endforeach ()
+add_test(NAME test_binding_align_benchmark_py COMMAND
+    ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/bindings/align_benchmark.py ${PROJECT_SOURCE_DIR}/tests/test_data/ONT.MiniION.1.seq)
+set_tests_properties(test_binding_align_benchmark_py PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+set_tests_properties(test_binding_align_benchmark_py PROPERTIES LABELS "examples")
+set_property(TEST test_binding_align_benchmark_py PROPERTY PASS_REGULAR_EXPRESSION "Score: 39743")
