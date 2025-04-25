@@ -4,7 +4,7 @@ target_include_directories(quickedcpp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/cpp)
 target_link_libraries(quickedcpp PRIVATE quicked)
 
 # QuickEd library Python binding (based on C++ binding)
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 add_subdirectory(python/pybind11)
 
 pybind11_add_module(pyquicked python/quicked.cpp cpp/quicked.cpp)

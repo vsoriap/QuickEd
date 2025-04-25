@@ -30,7 +30,7 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build (w/ vector support)
-      run: cmake --build ${{ steps.strings.outputs.build-dir }} --config Release --parallel 2
+      run: cmake --build ${{ steps.strings.outputs.build-dir }} --config Release --parallel 4
 
     - name: Move the target artifacts (w/ vector support)
       run: |
@@ -49,7 +49,7 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build (w/o vector support)
-      run: cmake --build ${{ steps.strings.outputs.build-dir }} --config Release --parallel 2
+      run: cmake --build ${{ steps.strings.outputs.build-dir }} --config Release --parallel 4
 
     - name: Move the target artifacts (w/o vector support)
       run: |

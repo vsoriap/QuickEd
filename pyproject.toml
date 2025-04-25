@@ -11,6 +11,7 @@ install.components = ["pyquicked"]
 [tool.cibuildwheel]
 environment = { CMAKE_ARGS = "-DQUICKED_NONATIVE=ON" }
 archs = ["auto64"]
+skip = ["pp*", "musllinux_*"] # Skip PyPy and musllinux builds to cut down on CI time
 
 [project]
 name = "QuickEd"
@@ -35,7 +36,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-version = "1.1"
+version = "1.1a1"
 requires-python = ">= 3.8"
 
 [project.urls]
