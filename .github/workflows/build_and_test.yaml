@@ -2,6 +2,7 @@ name: Build and Test
 
 on:
   push:
+    branches: [ main ]
     paths-ignore: # Skip the workflow if only documentation files are changed
       - '**/*.md'
       - '**/LICENSE'
