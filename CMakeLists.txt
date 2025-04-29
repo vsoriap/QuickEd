@@ -140,6 +140,8 @@ else()
         if (NOT QUICKED_FORCESCALAR)
             add_compile_options(/arch:SSE4.2 /arch:AVX2) # Strictly speaking, it should be SSE4.1. But MSVC lacks this flag.
             add_compile_definitions(USE_SSE) # MSVC do not define the macro when using /arch:SSE4.2
+        else()
+            add_compile_options(/arch:SSE2) # Forcefully disable SSE4.1 and AVX2 (SSE2 is the minimum supported by MSVC)
         endif()
     else()
         if(NOT (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "arm64"))

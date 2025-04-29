@@ -16,8 +16,7 @@ if (NOT MSVC)
     target_compile_options(pyquicked_scalar PRIVATE -fvisibility=hidden)
     target_compile_options(pyquicked_scalar PRIVATE -mno-sse4.1 -mno-avx2) # Disable SSE4.1 and AVX2 for the scalar Python binding
 else()
-    target_compile_options(pyquicked_scalar PRIVATE /arch:IA32) # Disable SSE4.1 and AVX2 for the scalar Python binding
-    target_compile_definitions(pyquicked_scalar PRIVATE _M_IX86)
+    target_compile_options(pyquicked_scalar PRIVATE /arch:SSE2)  # Disable SSE4.1 and AVX2 for the scalar Python binding (SSE2 is the minimum supported by MSVC)
 endif()
 
 
