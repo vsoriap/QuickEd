@@ -28,8 +28,12 @@
 namespace py = pybind11;
 using namespace py::literals;
 
+#ifndef PY_MODULE_NAME
+#define PY_MODULE_NAME _quicked
+#endif
+
 namespace quicked {
-    PYBIND11_MODULE(quicked, m) {
+    PYBIND11_MODULE(PY_MODULE_NAME, m) {
         m.doc() = R"pbdoc(
 QuickEd - A high-performance exact sequence alignment based on the bound-and-align paradigm
 ===========================================================================================

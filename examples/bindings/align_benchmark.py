@@ -3,7 +3,7 @@
 import sys
 import timeit
 
-from quicked import QuickedAlgo, QuickedAligner, QuickedException
+from quicked import QuickedAligner, QuickedException, backend
 
 if len(sys.argv) < 2:
     print("Usage: python3 test.py <input_file>")
@@ -41,6 +41,7 @@ def align_sequences():
             print(f"Error in pair {i // 2 + 1}: {e}")
 
 try:
+    print("Using backend:", backend)
     execution_time = timeit.timeit(align_sequences, number=1)
     print(f"Execution time: {execution_time:.2f} seconds")
 except QuickedException as e:

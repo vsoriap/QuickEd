@@ -3,7 +3,7 @@ requires = ["scikit-build-core==0.11.1", "packaging>=24.2"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
-build.verbose = true
+cmake.version = "==3.22.1" # Pinning CMake version to avoid conflicts with pinned dependencies
 logging.level = "INFO"
 build.targets = ["pyquicked"]
 install.components = ["pyquicked"]
@@ -11,7 +11,7 @@ install.components = ["pyquicked"]
 [tool.cibuildwheel]
 environment = { CMAKE_ARGS = "-DQUICKED_NONATIVE=ON" }
 archs = ["auto64"]
-skip = ["pp*", "musllinux_*"] # Skip PyPy and musllinux builds to cut down on CI time
+skip = ["pp*", "*musllinux*"] # Skip PyPy and musllinux builds to cut down on CI time
 
 [project]
 name = "QuickEd"
