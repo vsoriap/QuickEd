@@ -2,7 +2,7 @@ name: Build Python Wheels
 
 on:
   push:
-    branches: [main, "python"]
+    branches: [main]
     paths-ignore: # Skip the workflow if only documentation files are changed
       - "**/*.md"
       - "**/LICENSE"
