@@ -59,6 +59,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         # Ignore known non-concerning warnings
         add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wno-override-init>")
         add_compile_options(-Wno-error=cpp) # #warning are not errors
+        add_compile_options(-Wno-unused-command-line-argument) # All flags have a reason to be there, even if unused
 
         # Enable code coverage
         add_compile_options(--coverage)
