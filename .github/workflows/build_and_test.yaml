@@ -62,10 +62,4 @@ jobs:
     - name: Run Tests
       shell: bash
       working-directory: ${{ steps.strings.outputs.build-dir }}
-      run: |
-        if [[ "${{ matrix.os }}" == "windows-2022" ]]; then
-          # Python tests do not seem to work on Windows CI environments
-          ctest --build-config ${{ matrix.build_type }} --parallel 4 --output-on-failure -E "edlib_tests|test_binding_basic_py|test_binding_align_benchmark_py"
-        else
-          ctest --build-config ${{ matrix.build_type }} --parallel 4 --output-on-failure -E edlib_tests
-        fi
+      run: ctest --build-config ${{ matrix.build_type }} --parallel 4 --output-on-failure -E edlib_tests

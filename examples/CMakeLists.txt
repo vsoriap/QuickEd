@@ -35,7 +35,7 @@ endforeach ()
 # Python Binding Examples
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-add_test(NAME binding_install_py COMMAND ${Python3_EXECUTABLE} -m pip install --user ${PROJECT_SOURCE_DIR})
+add_test(NAME binding_install_py COMMAND ${Python3_EXECUTABLE} -m pip install --user --break-system-packages ${PROJECT_SOURCE_DIR})
 set_tests_properties(binding_install_py PROPERTIES
     FIXTURES_SETUP python_setup) # Phony test to install the Python bindings
 
@@ -48,7 +48,3 @@ add_test(NAME test_binding_align_benchmark_py COMMAND
 set_tests_properties(test_binding_align_benchmark_py PROPERTIES LABELS "examples")
 set_tests_properties(test_binding_align_benchmark_py PROPERTIES PASS_REGULAR_EXPRESSION "Score: 39743")
 set_tests_properties(test_binding_align_benchmark_py PROPERTIES FIXTURES_REQUIRED python_setup)
-
-add_test(NAME binding_cleanup_py COMMAND ${Python3_EXECUTABLE} -m pip uninstall -y quicked)
-set_tests_properties(binding_cleanup_py PROPERTIES
-    FIXTURES_CLEANUP python_setup) # Phony test to uninstall the Python bindings

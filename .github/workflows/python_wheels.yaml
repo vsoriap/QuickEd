@@ -1,16 +1,8 @@
 name: Build Python Wheels
 
 on:
-  push:
-    branches: [main]
-    paths-ignore: # Skip the workflow if only documentation files are changed
-      - "**/*.md"
-      - "**/LICENSE"
-  pull_request:
-    branches: [main]
-    paths-ignore: # Skip the workflow if only documentation files are changed
-      - "**/*.md"
-      - "**/LICENSE"
+  release:
+    types: [created]
   workflow_dispatch:
 
 jobs:
@@ -18,7 +10,6 @@ jobs:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-13, macos-14, windows-2022] # Macos 13 (Intel) / Macos 14 (Apple Silicon)
 
