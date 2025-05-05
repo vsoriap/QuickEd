@@ -2,3 +2,7 @@ build
 .built
 lib
 bin
+dist
+wheelhouse
+.vscode
+Testing

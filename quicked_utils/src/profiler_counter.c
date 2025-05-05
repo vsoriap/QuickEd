@@ -43,8 +43,8 @@ void counter_add(
   if (counter->samples == 1) {
     counter->min = amount;
     counter->max = amount;
-    counter->m_oldM = amount;
-    counter->m_newM = amount;
+    counter->m_oldM = (double)amount;
+    counter->m_newM = (double)amount;
     counter->m_oldS = 0.0;
   } else {
     counter->min = MIN(counter->min,amount);
@@ -140,7 +140,7 @@ void counter_print_stats(
     fprintf(stream,",Max%.2f",(double)max);
   }
   // Print Variance
-  const uint64_t var = counter_get_variance(counter);
+  const uint64_t var = (uint64_t)counter_get_variance(counter);
   if (var >= METRIC_FACTOR_1G) {
     fprintf(stream,",Var%.2fG",(double)var/METRIC_FACTOR_1G);
   } else if (var >= METRIC_FACTOR_1M) {
@@ -151,7 +151,7 @@ void counter_print_stats(
     fprintf(stream,",Var%.2f",(double)var);
   }
   // Print Standard Deviation
-  const uint64_t stdDev = counter_get_stddev(counter);
+  const uint64_t stdDev = (uint64_t)counter_get_stddev(counter);
   if (stdDev >= METRIC_FACTOR_1G) {
     fprintf(stream,",StdDev%.2fG)}\n",(double)stdDev/METRIC_FACTOR_1G);
   } else if (stdDev >= METRIC_FACTOR_1M) {
@@ -274,11 +274,11 @@ uint64_t rcounter_get_max(profiler_rcounter_t* const rcounter) {
   return counter_get_max(&rcounter->counter);
 }
 uint64_t rcounter_get_mean(profiler_rcounter_t* const rcounter) {
-  return counter_get_mean(&rcounter->counter);
+  return (uint64_t)counter_get_mean(&rcounter->counter);
 }
 uint64_t rcounter_get_variance(profiler_rcounter_t* const rcounter) {
-  return counter_get_variance(&rcounter->counter);
+  return (uint64_t)counter_get_variance(&rcounter->counter);
 }
 uint64_t rcounter_get_stddev(profiler_rcounter_t* const rcounter) {
-  return counter_get_stddev(&rcounter->counter);
+  return (uint64_t)counter_get_stddev(&rcounter->counter);
 }

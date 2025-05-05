@@ -278,22 +278,22 @@ void* mm_allocator_allocate(
 #endif
   if (segment != NULL) {
     // Allocate memory
-    void* const memory_base = segment->memory + segment->used;
+    void* const memory_base = OFFSET_VOIDPTR(segment->memory, segment->used);
     if (zero_mem) memset(memory_base,0,num_bytes_allocated); // Set zero
     // Compute aligned memory
-    void* memory_aligned = memory_base + sizeof(mm_allocator_reference_t) + align_bytes;
+    void* memory_aligned = OFFSET_VOIDPTR(memory_base, sizeof(mm_allocator_reference_t) + align_bytes);
     if (align_bytes > 0) {
-      memory_aligned = memory_aligned - ((uintptr_t)memory_aligned % align_bytes);
+      memory_aligned = NEG_OFFSET_VOIDPTR(memory_aligned, (uintptr_t)memory_aligned % align_bytes);
     }
     // Set mm_reference
-    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)(memory_aligned - sizeof(mm_allocator_reference_t));
-    mm_reference->segment_idx = segment->idx;
-    mm_reference->request_idx = mm_allocator_segment_get_num_requests(segment);
+    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
+    mm_reference->segment_idx = (uint32_t)segment->idx;
+    mm_reference->request_idx = (uint32_t)mm_allocator_segment_get_num_requests(segment);
     // Add request
     mm_allocator_request_t* request;
     vector_alloc_new(segment->requests,mm_allocator_request_t,request);
-    request->offset = segment->used;
-    request->size = num_bytes_allocated;
+    request->offset = (uint32_t)segment->used;
+    request->size = (uint32_t)num_bytes_allocated;
 #ifdef MM_ALLOCATOR_LOG
     request->timestamp = (mm_allocator->request_ticker)++;
     request->func_name = (char*)func_name;
@@ -308,14 +308,14 @@ void* mm_allocator_allocate(
     void* const memory_base = malloc(num_bytes_allocated);
     if (zero_mem) memset(memory_base,0,num_bytes_allocated); // Set zero
     // Compute aligned memory
-    void* memory_aligned = memory_base + sizeof(mm_allocator_reference_t) + align_bytes;
+    void* memory_aligned = OFFSET_VOIDPTR(memory_base, sizeof(mm_allocator_reference_t) + align_bytes);
     if (align_bytes > 0) {
-      memory_aligned = memory_aligned - ((uintptr_t)memory_aligned % align_bytes);
+      memory_aligned = NEG_OFFSET_VOIDPTR(memory_aligned, (uintptr_t)memory_aligned % align_bytes);
     }
     // Set reference
-    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)(memory_aligned - sizeof(mm_allocator_reference_t));
+    mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*)OFFSET_VOIDPTR(memory_aligned, -((intptr_t)sizeof(mm_allocator_reference_t)));
     mm_reference->segment_idx = UINT32_MAX;
-    mm_reference->request_idx = vector_get_used(mm_allocator->malloc_requests);
+    mm_reference->request_idx = (uint32_t)vector_get_used(mm_allocator->malloc_requests);
     // Add malloc-request
     mm_malloc_request_t* request;
     vector_alloc_new(mm_allocator->malloc_requests,mm_malloc_request_t,request);
@@ -359,7 +359,7 @@ void mm_allocator_free_malloc_request(
     for (i=0;i<num_requests;++i) {
       if (requests[i].size > 0) {
         requests[busy_requests] = requests[i];
-        requests[busy_requests].reference->request_idx = busy_requests;
+        requests[busy_requests].reference->request_idx = (uint32_t)busy_requests;
         ++busy_requests;
       }
     }
@@ -386,15 +386,15 @@ void mm_allocator_free_allocator_request(
   uint64_t num_requests = mm_allocator_segment_get_num_requests(segment);
   if (mm_reference->request_idx == num_requests-1) { // Is the last request?
     --num_requests;
-    mm_allocator_request_t* request =
+    mm_allocator_request_t* req =
         vector_get_mem(segment->requests,mm_allocator_request_t) + (num_requests-1);
-    while (num_requests>0 && MM_ALLOCATOR_REQUEST_IS_FREE(request)) {
+    while (num_requests>0 && MM_ALLOCATOR_REQUEST_IS_FREE(req)) {
       --num_requests; // Free request
-      --request;
+      --req;
     }
     // Update segment used
     if (num_requests > 0) {
-      segment->used = request->offset + request->size;
+      segment->used = req->offset + req->size;
       vector_set_used(segment->requests,num_requests);
     } else {
       // Segment fully freed
@@ -413,7 +413,7 @@ void mm_allocator_free(
   free(memory);
 #else
   // Get reference
-  void* const effective_memory = memory - sizeof(mm_allocator_reference_t);
+  void* const effective_memory = NEG_OFFSET_VOIDPTR(memory, (intptr_t)sizeof(mm_allocator_reference_t));
   mm_allocator_reference_t* const mm_reference = (mm_allocator_reference_t*) effective_memory;
   if (mm_reference->segment_idx == UINT32_MAX) {
     // Free malloc memory
@@ -586,7 +586,7 @@ void mm_allocator_print(
   uint64_t bytes_used_malloc, bytes_used_allocator;
   uint64_t bytes_free_available, bytes_free_fragmented;
   mm_allocator_get_occupation(mm_allocator,&bytes_used_malloc,&bytes_used_allocator,&bytes_free_available,&bytes_free_fragmented);
-  const float bytes_total = num_segments * segment_size;
+  const float bytes_total = (float)(num_segments * segment_size);
   const uint64_t bytes_free = bytes_free_available + bytes_free_fragmented;
   fprintf(stream,"    => Memory.used   %" PRIu64 " (%2.1f %%)\n",
       bytes_used_allocator,(double)(100.0f*(float)bytes_used_allocator/bytes_total));

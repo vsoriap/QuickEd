@@ -5,9 +5,9 @@ QuickEd
 [![Publication](https://img.shields.io/badge/Published%20in-Bioinformatics-167DA4.svg)](https://doi.org/10.1093/bioinformatics/btaf112)
 =====
 
-QuickEd is a high-performance exact sequence alignment based on the bound-and-align paradigm.
+QuickEd is a high-performance exact sequence alignment C library, based on the bound-and-align paradigm.
 
-Calculating the edit distance of two DNA sequences using the quicked library is as simple as:
+Calculating the edit distance of two DNA sequences (A, C, G, T, N) using the QuickEd library is as simple as:
 
 ```c
 quicked_params_t params = quicked_default_params();
@@ -15,7 +15,11 @@ quicked_new(&aligner, &params);
 quicked_align(&aligner, pattern, strlen(pattern), text, strlen(text));
 ```
 
-QuickEd has bindings available for **C++** at [bindings/cpp](bindings/cpp) and **Python** at [bindings/python](bindings/python).
+QuickEd has bindings available for **C++** (at [bindings/cpp](bindings/cpp)) and **Python** (at [bindings/python](bindings/python)).
+Python bindings are available through the [PyPI repository](https://pypi.org/project/QuickEd/) and can be installed using `pip install quicked`. More information about the Python bindings can be found in the [Python README](bindings/python/README.md).
+
+Multiple platforms are supported, including **Linux** (*x86_64*), **macOS** (*x86_64 and Apple Silicon*), and **Windows** (*x86_64*).
+Precompiled binaries for all platforms are available in the [Releases](https://github.com/maxdoblas/QuickEd/releases) section.
 
 ## Features
 

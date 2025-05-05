@@ -122,6 +122,6 @@ void sequence_buffer_add_pair(
   // Update used
   sequence_buffer->buffer_used += bytes_required;
   // Update stats
-  sequence_buffer->max_pattern_length = MAX((uint64_t)sequence_buffer->max_pattern_length,pattern_length);
-  sequence_buffer->max_text_length = MAX((uint64_t)sequence_buffer->max_text_length,text_length);
+  sequence_buffer->max_pattern_length = (int)MAX((uint64_t)sequence_buffer->max_pattern_length,pattern_length);
+  sequence_buffer->max_text_length = (int)MAX((uint64_t)sequence_buffer->max_text_length,text_length);
 }

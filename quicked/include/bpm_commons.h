@@ -100,6 +100,8 @@
     Pv = Mh | ~(Xv | Ph);                                               \
     Mv = Ph & Xv
 
+#define AVX_NOT(x) (_mm256_xor_si256(x, _mm256_set1_epi32(-1)))
+
 #define BPM_ADVANCE_BLOCK_SI256(Eq, mask, Pv, Mv, PHin, MHin, PHout, MHout) 	       \
     __m256i Xv    = _mm256_or_si256(Eq, Mv);      /*Eq | Mv*/                          \
     __m256i _Eq   = _mm256_or_si256(Eq, MHin);    /*Eq | MHin*/      	       	       \
@@ -108,7 +110,7 @@
     	    Xh    = _mm256_xor_si256(Xh, Pv); 					                       \
     	    Xh    = _mm256_or_si256(Xh, _Eq);					                       \
     __m256i Ph    = _mm256_or_si256(Xh, Pv);      /*Mv | ~(Xh | Pv)*/                  \
-    	    Ph    = _mm256_or_si256(Mv, ~Ph);					                       \
+    	    Ph    = _mm256_or_si256(Mv, AVX_NOT(Ph));					               \
     __m256i Mh 	  = _mm256_and_si256(Pv, Xh);     /*Pv & Xh*/			               \
             PHout = _mm256_and_si256(Ph, mask);   /*(Ph & mask) != 0*/	        	   \
     	    PHout = _mm256_cmpeq_epi64(PHout, _mm256_setzero_si256());		           \
@@ -121,7 +123,7 @@
       	    Ph    = _mm256_or_si256(Ph, PHin);    /*Ph |= PHin*/	        		   \
       	    Mh    = _mm256_or_si256(Mh, MHin);    /*Mh |= MHin*/		        	   \
       	    Pv    = _mm256_or_si256(Xv, Ph);      /*Mh | ~(Xv | Ph)*/      		       \
-      	    Pv    = _mm256_or_si256(Mh, ~Pv);                                          \
+      	    Pv    = _mm256_or_si256(Mh, AVX_NOT(Pv));                                  \
             Mv    = _mm256_and_si256(Ph, Xv);                                          \
 
 
@@ -133,7 +135,7 @@
     	    Xh2    = _mm256_xor_si256(Xh2, Pv2); 					                       \
     	    Xh2    = _mm256_or_si256(Xh2, _Eq2);					                       \
     __m256i Ph2    = _mm256_or_si256(Xh2, Pv2);      /*Mv | ~(Xh | Pv)*/                   \
-    	    Ph2    = _mm256_or_si256(Mv2, ~Ph2);					                       \
+    	    Ph2    = _mm256_or_si256(Mv2, AVX_NOT(Ph2));    		                       \
     __m256i Mh2 	  = _mm256_and_si256(Pv2, Xh2);     /*Pv & Xh*/			               \
             PHout2 = _mm256_and_si256(Ph2, mask2);   /*(Ph & mask) != 0*/	        	   \
     	    PHout2 = _mm256_cmpeq_epi64(PHout2, _mm256_setzero_si256());		           \
@@ -146,7 +148,7 @@
       	    Ph2    = _mm256_or_si256(Ph2, PHin2);    /*Ph |= PHin*/	        		       \
       	    Mh2    = _mm256_or_si256(Mh2, MHin2);    /*Mh |= MHin*/		        	       \
       	    Pv2    = _mm256_or_si256(Xv2, Ph2);      /*Mh | ~(Xv | Ph)*/      		       \
-      	    Pv2    = _mm256_or_si256(Mh2, ~Pv2);                                           \
+      	    Pv2    = _mm256_or_si256(Mh2, AVX_NOT(Pv2));                                   \
             Mv2    = _mm256_and_si256(Ph2, Xv2);                                           \
 
 #endif /* BPM_COMMON_H_ */

@@ -55,7 +55,7 @@ namespace quicked {
     {
         quicked_status_t status;
 
-        status = quicked_align(&this->aligner, pattern->c_str(), pattern->length(), text->c_str(), text->length());
+        status = quicked_align(&this->aligner, pattern->c_str(), (int)(pattern->length()), text->c_str(), (int)(text->length()));
 
         if (quicked_check_error(status)) {
             throw QuickedException(status);

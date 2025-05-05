@@ -26,6 +26,7 @@
 #define QUICKED_HPP
 
 #include <string>
+#include <ctime>
 
 namespace quicked {
 

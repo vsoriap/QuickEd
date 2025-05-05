@@ -72,7 +72,7 @@ int sequence_extract(
     const int seqshort_length)
 {
     const int length_diff = seqlong_length - seqshort_length;
-    const int offset = rand_iid(0, length_diff + 1);
+    const int offset = (int)rand_iid(0, length_diff + 1);
     strncpy(seqshort, seqlong + offset, seqshort_length);
     // Return offset
     return offset;
@@ -115,7 +115,7 @@ void sequence_generate_mismatch(
     int position;
     do
     {
-        position = rand_iid(0, sequence_length);
+        position = (int)rand_iid(0, sequence_length);
         character = alphabet[rand_iid(0, ALPHABET_SIZE)];
     } while (sequence[position] == character);
     // Log
@@ -133,7 +133,7 @@ void sequence_generate_deletion(
     seq_error_t *const errors_log)
 {
     // Generate random deletion
-    const int position = rand_iid(0, *sequence_length);
+    const int position = (int)rand_iid(0, *sequence_length);
     const int new_sequence_length = *sequence_length - 1;
     int i;
     for (i = position; i < new_sequence_length; ++i)
@@ -152,7 +152,7 @@ void sequence_generate_insertion(
     seq_error_t *const errors_log)
 {
     // Generate random insertion
-    const int position = rand_iid(0, *sequence_length);
+    const int position = (int)rand_iid(0, *sequence_length);
     const int new_sequence_length = *sequence_length + 1;
     int i;
     for (i = new_sequence_length - 1; i > position; --i)
@@ -178,7 +178,7 @@ int sequence_generate_errors(
     int i;
     for (i = 0; i < num_errors; ++i)
     {
-        int error_type = rand_iid(0, 3);
+        int error_type = (int)rand_iid(0, 3);
         switch (error_type)
         {
         case 0:
@@ -208,7 +208,7 @@ void sequence_generate_indel(
     seq_error_t *const errors_log)
 {
     // Generate random deletion
-    const int position = rand_iid(0, *sequence_length);
+    const int position = (int)rand_iid(0, *sequence_length);
     if (deletion_length >= *sequence_length)
         return;
     const int new_sequence_length = *sequence_length - deletion_length;
@@ -233,7 +233,7 @@ int sequence_generate_indels(
     int length = sequence_length;
     // Generate random indels
     int i;
-    const int indels = rand_iid(0, max_indels + 1);
+    const int indels = (int)rand_iid(0, max_indels + 1);
     for (i = 0; i < indels; ++i)
     {
         sequence_generate_indel(sequence, &length, deletion_length, errors_log + i);
@@ -324,17 +324,17 @@ void parse_arguments(int argc, char **argv)
             parameters.length = atoi(optarg);
             break;
         case 1000: // --length-diff
-            parameters.length_diff = atof(optarg);
+            parameters.length_diff = (float)atof(optarg);
             break;
         case 'e':
-            parameters.error_degree = atof(optarg);
+            parameters.error_degree = (float)atof(optarg);
             break;
         case 1001:
         { // --indels
             char *sentinel = strtok(optarg, ",");
-            parameters.indels_num = atof(sentinel);
+            parameters.indels_num = (int)atof(sentinel);
             sentinel = strtok(NULL, ",");
-            parameters.indels_length = atof(sentinel);
+            parameters.indels_length = (int)atof(sentinel);
             break;
         }
         case 'g':
@@ -364,15 +364,15 @@ int main(int argc, char *argv[])
     }
     // Allocate sequences
     const int pattern_length = parameters.length;
-    const int text_length = ceilf((float)pattern_length * parameters.length_diff);
+    const int text_length = (int)ceilf((float)pattern_length * parameters.length_diff);
     const int seqlong_length = MAX(pattern_length, text_length);  // Long sequence
     const int seqshort_length = MIN(pattern_length, text_length); // Short sequence
-    const int num_errors = (parameters.error_degree >= 1.0f) ? (int)parameters.error_degree : ceilf((float)pattern_length * parameters.error_degree);
+    const int num_errors = (parameters.error_degree >= 1.0f) ? (int)parameters.error_degree : (int)ceilf((float)pattern_length * parameters.error_degree);
     char *const seqlong = malloc(seqlong_length + 1);
     char *const seqshort = malloc(seqshort_length + 1 + num_errors + parameters.indels_num * parameters.indels_length);
     seq_error_t *const errors_log = malloc((num_errors + parameters.indels_num + 1) * sizeof(seq_error_t));
     // Read-align loop
-    srand(time(0));
+    srand((unsigned int)time(0));
     int i;
     for (i = 0; i < parameters.num_reads; ++i)
     {

@@ -81,9 +81,9 @@ bool align_benchmark_read_input(
   // Parameters
   int line1_length=0, line2_length=0;
   // Read queries
-  line1_length = getline(line1,line1_allocated,input_file);
+  line1_length = (int)getline(line1,line1_allocated,input_file);
   if (line1_length==-1) return false;
-  line2_length = getline(line2,line2_allocated,input_file);
+  line2_length = (int)getline(line2,line2_allocated,input_file);
   if (line1_length==-1) return false;
   // Configure input
   align_input->sequence_id = seqs_processed;
@@ -242,8 +242,8 @@ void align_benchmark_parallel(void) {
   if (parameters.output_filename != NULL) {
     parameters.output_file = fopen(parameters.output_filename, "w");
   }
-  // Global configuration
-  align_input_t align_input[parameters.num_threads];
+
+  VLA_INIT(align_input_t, align_input, parameters.num_threads);
   for (int tid=0;tid<parameters.num_threads;++tid) {
     align_input_configure_global(align_input+tid);
   }
@@ -269,15 +269,16 @@ void align_benchmark_parallel(void) {
     #pragma omp parallel num_threads(parameters.num_threads)
     {
       int tid = omp_get_thread_num();
+      int seq_idx;
       #pragma omp for
-      for (int seq_idx=0;seq_idx<seqs_batch;++seq_idx) {
+      for (seq_idx=0;seq_idx<seqs_batch;++seq_idx) {
         // Configure sequence
         sequence_offset_t* const offset = sequence_buffer->offsets + seq_idx;
         align_input[tid].sequence_id = seqs_processed;
         align_input[tid].pattern = sequence_buffer->buffer + offset->pattern_offset;
-        align_input[tid].pattern_length = offset->pattern_length;
+        align_input[tid].pattern_length = (int)(offset->pattern_length);
         align_input[tid].text = sequence_buffer->buffer + offset->text_offset;
-        align_input[tid].text_length = offset->text_length;
+        align_input[tid].text_length = (int)(offset->text_length);
         // Execute the selected algorithm
         align_benchmark_run_algorithm(align_input+tid);
       }

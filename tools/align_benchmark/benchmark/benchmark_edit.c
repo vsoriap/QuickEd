@@ -350,7 +350,7 @@ void benchmark_edlib(align_input_t* const align_input,
   result = edlibAlign(
       align_input->pattern,align_input->pattern_length,
       align_input->text,align_input->text_length,
-      edlibNewAlignConfig(bandwidth_k,EDLIB_MODE_NW,EDLIB_TASK_PATH,NULL,0));
+      edlibNewAlignConfig((int)bandwidth_k,EDLIB_MODE_NW,EDLIB_TASK_PATH,NULL,0));
   edlib_cigar = edlibAlignmentToCigar(
       result.alignment,result.alignmentLength,EDLIB_CIGAR_EXTENDED); // Traceback
   timer_stop(&align_input->timer);

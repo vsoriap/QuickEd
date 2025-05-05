@@ -43,6 +43,12 @@ void timer_get_system_time(struct timespec *ts) {
   mach_port_deallocate(mach_task_self(),cclock);
   ts->tv_sec = mts.tv_sec;
   ts->tv_nsec = mts.tv_nsec;
+#elif _WIN32 // Windows does not have clock_gettime, use GetSystemTimePreciseAsFileTime
+  FILETIME ft;
+  GetSystemTimePreciseAsFileTime(&ft);
+  uint64_t time = ((uint64_t)ft.dwHighDateTime << 32) | (uint64_t)ft.dwLowDateTime;
+  ts->tv_sec = (long)(time / 1000000000ull);
+  ts->tv_nsec = (long)(time % 1000000000ull);
 #else
   clock_gettime(CLOCK_REALTIME,ts);
 #endif
@@ -92,13 +98,13 @@ uint64_t timer_get_max_ns(const profiler_timer_t* const timer) {
   return counter_get_max(&timer->time_ns);
 }
 uint64_t timer_get_mean(const profiler_timer_t* const timer) {
-  return counter_get_mean(&timer->time_ns);
+  return (uint64_t)counter_get_mean(&timer->time_ns);
 }
 uint64_t timer_get_variance(const profiler_timer_t* const timer) {
-  return counter_get_variance(&timer->time_ns);
+  return (uint64_t)counter_get_variance(&timer->time_ns);
 }
 uint64_t timer_get_stddev(const profiler_timer_t* const timer) {
-  return counter_get_stddev(&timer->time_ns);
+  return (uint64_t)counter_get_stddev(&timer->time_ns);
 }
 void timer_print_total(
     FILE* const stream,

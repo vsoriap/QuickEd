@@ -65,7 +65,7 @@ void vector_reserve(
     const uint64_t num_elements,
     const bool zero_mem) {
   if (vector->elements_allocated < num_elements) {
-    const uint64_t proposed = (float)vector->elements_allocated*VECTOR_EXPAND_FACTOR;
+    const uint64_t proposed = (uint64_t)((float)vector->elements_allocated*VECTOR_EXPAND_FACTOR);
     vector->elements_allocated = num_elements>proposed?num_elements:proposed;
     vector->memory = realloc(vector->memory,vector->elements_allocated*vector->element_size);
     if (!vector->memory) {
@@ -75,8 +75,8 @@ void vector_reserve(
     }
   }
   if (zero_mem) {
-    memset(vector->memory+vector->used*vector->element_size,0,
-        (vector->elements_allocated-vector->used)*vector->element_size);
+    memset(OFFSET_VOIDPTR(vector->memory, vector->used * vector->element_size), 0,
+      (vector->elements_allocated - vector->used) * vector->element_size);
   }
 }
 /*

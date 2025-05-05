@@ -27,12 +27,15 @@
 #include "quicked_utils/include/dna_text.h"
 #include "bpm_banded.h"
 #include "bpm_commons.h"
-#include <sys/mman.h>
 
 #ifndef __AVX2__
-#warning "AVX2 or higher is required for SIMD banded"
+    #ifdef _MSC_VER
+        #pragma message("AVX2 or higher is required for SIMD banded")
+    #else
+        #warning "AVX2 or higher is required for SIMD banded"
+    #endif
 #else
-#include <immintrin.h>
+    #include <immintrin.h>
 #endif
 
 
@@ -58,11 +61,11 @@ void banded_pattern_compile(
     const uint64_t total_memory = PEQ_size + 3 * aux_vector_size + (pattern_num_words64)*UINT64_SIZE;
     void *memory = mm_allocator_malloc(mm_allocator, total_memory);
     banded_pattern->PEQ = memory;
-    memory += PEQ_size;
+    memory = OFFSET_VOIDPTR(memory, PEQ_size);
     banded_pattern->P = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     banded_pattern->M = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     banded_pattern->level_mask = memory;
     // Init PEQ
     memset(banded_pattern->PEQ, 0, PEQ_size);
@@ -165,8 +168,8 @@ void banded_matrix_allocate(
     banded_matrix->Pv = Pv;
     banded_matrix->scores = scores;
     // CIGAR
-    banded_matrix->cigar = cigar_new(pattern_length + text_length,mm_allocator);
-    banded_matrix->cigar->end_offset = pattern_length + text_length;
+    banded_matrix->cigar = cigar_new((int)(pattern_length + text_length),mm_allocator);
+    banded_matrix->cigar->end_offset = (int)(pattern_length + text_length);
 }
 
 void banded_matrix_free(
@@ -313,12 +316,12 @@ void bpm_compute_matrix_banded_cutoff(
     {
         final_score = scores[(banded_pattern->pattern_length - 1) / BPM_W64_LENGTH];
     }
-    banded_matrix->cigar->score = final_score;
+    banded_matrix->cigar->score = (int)final_score;
     banded_matrix->higher_block = last_block_v;
     banded_matrix->lower_block = first_block_v;
 }
 
-static inline __attribute__((always_inline)) void compute_advance_block (
+static FORCE_INLINE void compute_advance_block (
     uint64_t* Pv, 
     uint64_t* Mv,
     const uint64_t *const PEQ,
@@ -430,7 +433,7 @@ void bpm_compute_matrix_banded_cutoff_score_avx(
                 __m256i MHout = MHin; 
                 __m256i PHout = PHout;
                 
-                #pragma GCC unroll(4)
+                PRAGMA_UNROLL(4)
                 for (i = first_block_v+3; i < first_block_v+7; i++) 
                 {
                     Pv_in = _mm256_permute4x64_epi64(Pv_in, 0x39);
@@ -570,7 +573,7 @@ void bpm_compute_matrix_banded_cutoff_score_avx(
                 MHout = MHin; 
                 PHout = PHin;
 
-                #pragma GCC unroll(4)
+                PRAGMA_UNROLL(4)
                 for (i = last_block_v-3; i <= last_block_v; i++) 
                 {
                     Pv_in = _mm256_permute4x64_epi64(Pv_in, 0x39);
@@ -785,7 +788,7 @@ void bpm_compute_matrix_banded_cutoff_score_avx(
     {
         final_score = scores[(banded_pattern->pattern_length - 1) / BPM_W64_LENGTH];
     }
-    banded_matrix->cigar->score = final_score;
+    banded_matrix->cigar->score = (int)final_score;
     banded_matrix->higher_block = last_block_v;
     banded_matrix->lower_block = first_block_v;
 }
@@ -961,7 +964,7 @@ void bpm_compute_matrix_banded_cutoff_score(
     {
         final_score = scores[(banded_pattern->pattern_length - 1) / BPM_W64_LENGTH];
     }
-    banded_matrix->cigar->score = final_score;
+    banded_matrix->cigar->score = (int)final_score;
     banded_matrix->higher_block = last_block_v;
     banded_matrix->lower_block = first_block_v;
 }
@@ -980,7 +983,7 @@ void banded_backtrace_matrix_cutoff(
     const uint64_t *const Mv = banded_matrix->Mv;
     char *const operations = banded_matrix->cigar->operations;
     int op_sentinel = banded_matrix->cigar->end_offset - 1;
-    const int effective_bandwidth_blocks = banded_matrix->effective_bandwidth_blocks;
+    const int effective_bandwidth_blocks = (int)(banded_matrix->effective_bandwidth_blocks);
     const int64_t prologue_columns = banded_matrix->prolog_column_blocks;
 
     // Retrieve the alignment. Store the match
@@ -998,8 +1001,8 @@ void banded_backtrace_matrix_cutoff(
         const int64_t block_v_r = effective_v_r / BPM_W64_LENGTH;
         const int64_t bdp_idx = BPM_PATTERN_BDP_IDX(h, num_words64, block_v);
         const int64_t bdp_idx_r = BPM_PATTERN_BDP_IDX(h + 1, num_words64, block_v_r);
-        const uint64_t mask = 1UL << (effective_v % BPM_W64_LENGTH);
-        const uint64_t mask_r = 1UL << (effective_v_r % BPM_W64_LENGTH);
+        const uint64_t mask = 1ULL << (effective_v % BPM_W64_LENGTH);
+        const uint64_t mask_r = 1ULL << (effective_v_r % BPM_W64_LENGTH);
 
         // CIGAR operation Test
         if (Pv[bdp_idx_r] & mask_r)

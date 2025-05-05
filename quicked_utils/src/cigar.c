@@ -40,7 +40,7 @@
 
 const uint8_t sam_cigar_lut[256] =
 {
-  [0 ... 255] = SAM_CIGAR_NA,
+  REPEAT_256(SAM_CIGAR_NA),
   ['M'] = SAM_CIGAR_MATCH,
   ['I'] = SAM_CIGAR_INS,
   ['D'] = SAM_CIGAR_DEL,
@@ -253,7 +253,7 @@ void cigar_to_operations(
     cigar_t* const cigar,
     const char* const cigar_str,
     const uint64_t cigar_length) {
-  int num;
+  int num = 0;
   for(uint64_t i = 0; i < cigar_length;){
     char operation = cigar_str[i];
     if (operation >= '0' && operation <= '9') {
@@ -515,11 +515,11 @@ int cigar_sprint_SAM_CIGAR(
   for (i=0;i<cigar_length;++i) {
     const int op_idx = cigar_buffer[i] & 0xf;
     if (op_idx <= 8) {
-      cursor += snprintf(buffer+cursor,buf_size,"%d%c",
+      cursor += snprintf(buffer+cursor,buf_size,"%u%c",
           cigar_buffer[i]>>4,
           "MIDN---=X"[cigar_buffer[i]&0xf]);
-    } else {
-      cursor += snprintf(buffer+cursor,buf_size,"%d%c",
+        } else {
+      cursor += snprintf(buffer+cursor,buf_size,"%u%c",
           cigar_buffer[i]>>4,'?');
     }
   }

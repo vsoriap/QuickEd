@@ -28,10 +28,14 @@
 #include "bpm_windowed.h"
 #include "bpm_commons.h"
 
-#ifndef __SSE4_1__
-#warning "SSE4.1 or higher is required for SIMD windows"
+#if defined(__SSE4_1__) || defined(USE_SSE) // MSVC manual flag
+    #include <immintrin.h>
 #else
-#include <immintrin.h>
+    #ifdef _MSC_VER
+        #pragma message("SSE4.1 or higher is required for SIMD windows")
+    #else
+        #warning "SSE4.1 or higher is required for SIMD windows"
+    #endif
 #endif
 
 /*
@@ -60,17 +64,17 @@ void windowed_pattern_compile(
     const uint64_t total_memory = PEQ_size + 3 * aux_vector_size + 2 * score_size + (pattern_num_words64 + 1) * UINT64_SIZE;
     void *memory = mm_allocator_malloc(mm_allocator, total_memory);
     windowed_pattern->PEQ = memory;
-    memory += PEQ_size;
+    memory = OFFSET_VOIDPTR(memory, PEQ_size);
     windowed_pattern->P = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     windowed_pattern->M = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     windowed_pattern->level_mask = memory;
-    memory += aux_vector_size;
+    memory = OFFSET_VOIDPTR(memory, aux_vector_size);
     windowed_pattern->score = memory;
-    memory += score_size;
+    memory = OFFSET_VOIDPTR(memory, score_size);
     windowed_pattern->init_score = memory;
-    memory += score_size;
+    memory = OFFSET_VOIDPTR(memory, score_size);
     windowed_pattern->pattern_left = memory;
     // Init PEQ
     memset(windowed_pattern->PEQ, 0, PEQ_size);
@@ -149,9 +153,9 @@ void windowed_matrix_allocate(
     windowed_matrix->pos_h = text_length - 1;
     windowed_matrix->high_error_window = 0;
     // CIGAR
-    windowed_matrix->cigar = cigar_new(pattern_length + text_length,mm_allocator);
-    windowed_matrix->cigar->end_offset = pattern_length + text_length;
-    windowed_matrix->cigar->begin_offset = pattern_length + text_length - 1;
+    windowed_matrix->cigar = cigar_new((int)(pattern_length + text_length),mm_allocator);
+    windowed_matrix->cigar->end_offset = (int)(pattern_length + text_length);
+    windowed_matrix->cigar->begin_offset = (int)(pattern_length + text_length - 1);
     windowed_matrix->cigar->score = 0;
 
     const uint64_t aux_PEQ_size = window_size * UINT64_SIZE * BPM_ALPHABET_LENGTH; /* (+1 base-column) */
@@ -238,7 +242,7 @@ void windowed_compute_window(
     {
         for (uint64_t enc_char = 0; enc_char < BPM_ALPHABET_LENGTH; enc_char++)
         {
-            const uint64_t Eq = PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << (BPM_W64_LENGTH - shift)) & shift_mask);
+            const uint64_t Eq = (PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift) | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << ((BPM_W64_LENGTH - shift) & (UINT64_LENGTH - 1))) & shift_mask);
             PEQ_window[BPM_PATTERN_PEQ_IDX(i, enc_char)] = Eq;
         }
     }
@@ -317,7 +321,7 @@ void windowed_compute_window_sse(
     {
         for (uint64_t enc_char = 0; enc_char < BPM_ALPHABET_LENGTH; enc_char++)
         {
-            const uint64_t Eq = PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << (BPM_W64_LENGTH - shift)) & shift_mask);
+            const uint64_t Eq = (PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block, enc_char)] >> shift) | ((PEQ[BPM_PATTERN_PEQ_IDX(i + pos_v_block + 1, enc_char)] << ((BPM_W64_LENGTH - shift) & (UINT64_LENGTH - 1))) & shift_mask);
             PEQ_window[BPM_PATTERN_PEQ_IDX(i, enc_char)] = Eq;
         }
     }
@@ -469,9 +473,9 @@ void windowed_backtrace(
 
     while (v >= v_overlap && h >= h_overlap)
     {
-        const uint8_t block = (v - v_min) / UINT64_LENGTH;
+        const uint8_t block = (uint8_t)((v - v_min) / UINT64_LENGTH);
         const uint64_t bdp_idx = BPM_PATTERN_BDP_IDX((h - h_min + 1), num_words64, block);
-        const uint64_t mask = 1L << (v - v_min % UINT64_LENGTH);
+        const uint64_t mask = 1ULL << ((v - v_min) % UINT64_LENGTH);
 
         if (text[h] == pattern[v])
         {
@@ -525,9 +529,9 @@ void windowed_backtrace_score_only(
 
     while (v >= v_overlap && h >= h_overlap)
     {
-        const uint8_t block = (v - v_min) / UINT64_LENGTH;
+        const uint8_t block = (uint8_t)((v - v_min) / UINT64_LENGTH);
         const uint64_t bdp_idx = BPM_PATTERN_BDP_IDX((h - h_min + 1), num_words64, block);
-        const uint64_t mask = 1L << (v - v_min % UINT64_LENGTH);
+        const uint64_t mask = 1ULL << ((v - v_min) % UINT64_LENGTH);
 
         if (Pv[bdp_idx] & mask)
         {
@@ -557,7 +561,7 @@ void windowed_backtrace_score_only(
 
     windowed_matrix->pos_h = h;
     windowed_matrix->pos_v = v;
-    windowed_matrix->cigar->score += score;
+    windowed_matrix->cigar->score += (int)score;
 }
 
 void windowed_compute(
@@ -601,9 +605,9 @@ void windowed_compute(
         int64_t h = windowed_matrix->pos_h;
         int64_t v = windowed_matrix->pos_v;
         if (h >= 0)
-            windowed_matrix->cigar->score += h + 1;
+            windowed_matrix->cigar->score += (int)(h + 1);
         if (v >= 0)
-            windowed_matrix->cigar->score += v + 1;
+            windowed_matrix->cigar->score += (int)(v + 1);
     }
     else
     {
