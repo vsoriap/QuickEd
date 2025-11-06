@@ -103,52 +103,27 @@
 #define AVX_NOT(x) (_mm256_xor_si256(x, _mm256_set1_epi32(-1)))
 
 #define BPM_ADVANCE_BLOCK_SI256(Eq, mask, Pv, Mv, PHin, MHin, PHout, MHout) 	       \
-    __m256i Xv    = _mm256_or_si256(Eq, Mv);      /*Eq | Mv*/                          \
-    __m256i _Eq   = _mm256_or_si256(Eq, MHin);    /*Eq | MHin*/      	       	       \
-    __m256i Xh    = _mm256_and_si256(_Eq, Pv);    /*(((_Eq & Pv) + Pv) ^ Pv) | _Eq*/   \
-    	    Xh    = _mm256_add_epi64(Xh, Pv);					                       \
-    	    Xh    = _mm256_xor_si256(Xh, Pv); 					                       \
-    	    Xh    = _mm256_or_si256(Xh, _Eq);					                       \
-    __m256i Ph    = _mm256_or_si256(Xh, Pv);      /*Mv | ~(Xh | Pv)*/                  \
-    	    Ph    = _mm256_or_si256(Mv, AVX_NOT(Ph));					               \
-    __m256i Mh 	  = _mm256_and_si256(Pv, Xh);     /*Pv & Xh*/			               \
-            PHout = _mm256_and_si256(Ph, mask);   /*(Ph & mask) != 0*/	        	   \
-    	    PHout = _mm256_cmpeq_epi64(PHout, _mm256_setzero_si256());		           \
-            PHout = _mm256_andnot_si256(PHout, _mm256_set1_epi64x(1));				   \
-            MHout = _mm256_and_si256(Mh, mask);   /*(Mh & mask) != 0 */	               \
-    	    MHout = _mm256_cmpeq_epi64(MHout, _mm256_setzero_si256());				   \
-            MHout = _mm256_andnot_si256(MHout, _mm256_set1_epi64x(1));				   \
-      	    Ph 	  = _mm256_slli_epi64(Ph, 1);     /*Ph <<= 1*/		            	   \
-      	    Mh 	  = _mm256_slli_epi64(Mh, 1);     /*Mh <<= 1*/		            	   \
-      	    Ph    = _mm256_or_si256(Ph, PHin);    /*Ph |= PHin*/	        		   \
-      	    Mh    = _mm256_or_si256(Mh, MHin);    /*Mh |= MHin*/		        	   \
-      	    Pv    = _mm256_or_si256(Xv, Ph);      /*Mh | ~(Xv | Ph)*/      		       \
-      	    Pv    = _mm256_or_si256(Mh, AVX_NOT(Pv));                                  \
-            Mv    = _mm256_and_si256(Ph, Xv);                                          \
-
-
-#define BPM_ADVANCE_BLOCK_SI256_2(Eq2, mask2, Pv2, Mv2, PHin2, MHin2, PHout2, MHout2) 	   \
-    __m256i Xv2    = _mm256_or_si256(Eq2, Mv2);      /*Eq | Mv*/                           \
-    __m256i _Eq2   = _mm256_or_si256(Eq2, MHin2);    /*Eq | MHin*/      	       	       \
-    __m256i Xh2    = _mm256_and_si256(_Eq2, Pv2);    /*(((_Eq & Pv) + Pv) ^ Pv) | _Eq*/    \
-    	    Xh2    = _mm256_add_epi64(Xh2, Pv2);					                       \
-    	    Xh2    = _mm256_xor_si256(Xh2, Pv2); 					                       \
-    	    Xh2    = _mm256_or_si256(Xh2, _Eq2);					                       \
-    __m256i Ph2    = _mm256_or_si256(Xh2, Pv2);      /*Mv | ~(Xh | Pv)*/                   \
-    	    Ph2    = _mm256_or_si256(Mv2, AVX_NOT(Ph2));    		                       \
-    __m256i Mh2 	  = _mm256_and_si256(Pv2, Xh2);     /*Pv & Xh*/			               \
-            PHout2 = _mm256_and_si256(Ph2, mask2);   /*(Ph & mask) != 0*/	        	   \
-    	    PHout2 = _mm256_cmpeq_epi64(PHout2, _mm256_setzero_si256());		           \
-            PHout2 = _mm256_andnot_si256(PHout2, _mm256_set1_epi64x(1));				   \
-            MHout2 = _mm256_and_si256(Mh2, mask2);   /*(Mh & mask) != 0 */	               \
-    	    MHout2 = _mm256_cmpeq_epi64(MHout2, _mm256_setzero_si256());				   \
-            MHout2 = _mm256_andnot_si256(MHout2, _mm256_set1_epi64x(1));				   \
-      	    Ph2 	  = _mm256_slli_epi64(Ph2, 1);     /*Ph <<= 1*/		            	   \
-      	    Mh2 	  = _mm256_slli_epi64(Mh2, 1);     /*Mh <<= 1*/		            	   \
-      	    Ph2    = _mm256_or_si256(Ph2, PHin2);    /*Ph |= PHin*/	        		       \
-      	    Mh2    = _mm256_or_si256(Mh2, MHin2);    /*Mh |= MHin*/		        	       \
-      	    Pv2    = _mm256_or_si256(Xv2, Ph2);      /*Mh | ~(Xv | Ph)*/      		       \
-      	    Pv2    = _mm256_or_si256(Mh2, AVX_NOT(Pv2));                                   \
-            Mv2    = _mm256_and_si256(Ph2, Xv2);                                           \
+    int64x2_t Xv    = vorrq_s64(Eq, Mv);      /*Eq | Mv*/                          \
+    int64x2_t _Eq   = vorrq_s64(Eq, MHin);    /*Eq | MHin*/      	       	       \
+    int64x2_t Xh    = vandq_s64(_Eq, Pv);    /*(((_Eq & Pv) + Pv) ^ Pv) | _Eq*/   \
+    	      Xh    = vaddq_s64(Xh, Pv);					                       \
+    	      Xh    = veorq_s64(Xh, Pv); 					                       \
+    	      Xh    = vorrq_s64(Xh, _Eq);					                       \
+    int64x2_t Ph    = vorrq_s64(Xh, Pv);      /*Mv | ~(Xh | Pv)*/                  \
+    	      Ph    = vornq_s64(Mv, Ph);					               \
+    int64x2_t Mh    = vandq_s64(Pv, Xh);     /*Pv & Xh*/			               \
+              PHout = vandq_s64(Ph, mask);   /*(Ph & mask) != 0*/	        	   \
+    	      PHout = vceqq_u64(PHout, vdupq_n_s64(0));		           \
+              PHout = _mm256_andnot_si256(PHout, vdupq_n_s64(1));				   \
+              MHout = vandq_s64(Mh, mask);   /*(Mh & mask) != 0 */	               \
+    	      MHout = vceqq_u64(MHout, vdupq_n_s64(0));				   \
+              MHout = _mm256_andnot_si256(MHout, vdupq_n_s64(1));				   \
+      	      Ph    = vshlq_n_u64(Ph, 1);     /*Ph <<= 1*/		            	   \
+      	      Mh    = vshlq_n_u64(Mh, 1);     /*Mh <<= 1*/		            	   \
+      	      Ph    = vorrq_s64(Ph, PHin);    /*Ph |= PHin*/	        		   \
+      	      Mh    = vorrq_s64(Mh, MHin);    /*Mh |= MHin*/		        	   \
+      	      Pv    = vorrq_s64(Xv, Ph);      /*Mh | ~(Xv | Ph)*/      		       \
+      	      Pv    = vornq_s64(Mh, Pv);                                  \
+              Mv    = vandq_s64(Ph, Xv);                                          \
 
 #endif /* BPM_COMMON_H_ */
